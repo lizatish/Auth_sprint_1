@@ -7,6 +7,12 @@ authors = ["Elizaveta Tishkovets <etishkovec@ubic.tech>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 flake8 = "^5.0.4"
+Flask = "^2.2.2"
+Flask-JWT-Extended = "^4.4.4"
+Flask-Security = "^3.0.0"
+flasgger = "^0.9.5"
+flask-marshmallow = "^0.14.0"
+gevent = "^22.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
