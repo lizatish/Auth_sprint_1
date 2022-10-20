@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import Depends
 
-from core.config import get_settings
+from core.settings import get_settings
 from db.elastic import get_elastic_storage
 from db.redis import get_redis_storage
 from db.cache import AsyncCacheStorage

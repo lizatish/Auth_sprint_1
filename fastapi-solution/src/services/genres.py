@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import Depends
 
-from core.config import get_settings
+from core.settings import get_settings
 from services.search_engine import SearchEngineService
 from services.cache import CacheService
 from db.elastic import get_elastic_storage

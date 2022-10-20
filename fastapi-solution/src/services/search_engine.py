@@ -2,7 +2,7 @@ from typing import Optional
 
 from elasticsearch import NotFoundError
 
-from core.config import get_settings
+from core.settings import get_settings
 from db.elastic import AsyncSearchEngine
 
 conf = get_settings()
