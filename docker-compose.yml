@@ -29,6 +29,46 @@ services:
       - .env
     restart: always
 
+  api_service:
+    build:
+      context: fastapi-solution/
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - elastic
+    env_file:
+      - .env
+    restart: always
+
+  etl_genres:
+    image: lizatish/etl:etl_genres
+    depends_on:
+      - postgres
+      - elastic
+    env_file:
+      - .env
+
+  etl_persons:
+    image: lizatish/etl:etl_persons
+    depends_on:
+      - postgres
+      - elastic
+    env_file:
+      - .env
+
+  etl_fw:
+    image: lizatish/etl:etl_fw
+    depends_on:
+      - postgres
+      - elastic
+    env_file:
+      - .env
+
+  elastic:
+    image: elasticsearch:7.17.5
+    environment:
+      ES_JAVA_OPTS: "-Xms200m -Xmx200m"
+      discovery.type: single-node
   nginx:
     image: nginx:1.21.3-alpine
     ports:
@@ -38,3 +78,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - auth_service
+      - api_service
+
+volumes:
+  esdata:
