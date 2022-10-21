@@ -34,12 +34,18 @@ class ProdSettings(Settings):
     TESTING: bool = False
     DATABASE_URI: str
 
+    # Настройки базы данных
+    SQLALCHEMY_DATABASE_URI: str = 'postgresql://scott:tiger@localhost/mydatabase'
+
 
 class DevSettings(Settings):
     FLASK_ENV: bool = 'development'
     DEBUG: bool = True
     TESTING: bool = True
     DATABASE_URI: str
+
+    # Настройки базы данных
+    SQLALCHEMY_DATABASE_URI: str = ''
 
 
 @lru_cache()
