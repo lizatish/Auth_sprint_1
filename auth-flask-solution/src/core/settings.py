@@ -27,21 +27,22 @@ class Settings(BaseSettings):
 
 
 class ProdSettings(Settings):
+    """Настройки для развертки приложения."""
+
     FLASK_ENV: str = 'production'
     DEBUG: bool = False
     TESTING: bool = False
-    DATABASE_URI: str
 
     # Настройки базы данных
-    SQLALCHEMY_DATABASE_URI: str = 'postgresql://scott:tiger@localhost/mydatabase'
+    SQLALCHEMY_DATABASE_URI: str = 'postgresql://auth_postgres'
 
 
 class DevSettings(Settings):
+    """Настройки для разработки приложения;"""
+
     FLASK_ENV: str = 'development'
     DEBUG: bool = True
     TESTING: bool = True
-
-    DATABASE_URI: str
 
     # Настройки базы данных
     SQLALCHEMY_DATABASE_URI: str = ''
@@ -49,5 +50,5 @@ class DevSettings(Settings):
     class Config:
         """Дополнительные базовые настройки."""
 
-        env_file = '/Users/lizatish/PycharmProjects/Auth_sprint_1/local.env'
+        env_file = '../../.env.local'
         env_file_encoding = 'utf-8'

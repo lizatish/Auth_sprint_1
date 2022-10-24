@@ -3,6 +3,7 @@ from werkzeug.utils import import_string
 
 
 def create_app(config_filename: str) -> Flask:
+    """Фабрика создания приложения."""
     app = Flask(__name__)
 
     cfg = import_string(config_filename)()

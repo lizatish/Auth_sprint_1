@@ -1,18 +1,19 @@
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 db: SQLAlchemy | None = None
 
 
-def create_db(app):
+def create_db(app: Flask):
+    """Инициализирует бд для алхимии."""
     global db
-    if not db:
-        db = SQLAlchemy()
-        db.init_app(app)
-        with app.app_context():
-            from models import general
-            db.create_all()
-    return db
+    db = SQLAlchemy()
+    db.init_app(app)
+    with app.app_context():
+        from models import db_models  # noqa
+        db.create_all()
 
 
-def get_db():
+def get_db() -> SQLAlchemy:
+    """Возвращает экземпляр алхимии."""
     return db
