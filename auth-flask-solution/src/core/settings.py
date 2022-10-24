@@ -1,5 +1,4 @@
 import os
-from functools import lru_cache
 
 from pydantic import BaseSettings
 
@@ -7,7 +6,6 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
     SECRET_KEY: str
-    SESSION_COOKIE_NAME: str
     STATIC_FOLDER: str = 'static'
     TEMPLATES_FOLDER: str = 'templates'
 
@@ -39,22 +37,17 @@ class ProdSettings(Settings):
 
 
 class DevSettings(Settings):
-    FLASK_ENV: bool = 'development'
+    FLASK_ENV: str = 'development'
     DEBUG: bool = True
     TESTING: bool = True
+
     DATABASE_URI: str
 
     # Настройки базы данных
     SQLALCHEMY_DATABASE_URI: str = ''
 
+    class Config:
+        """Дополнительные базовые настройки."""
 
-@lru_cache()
-def get_dev_settings():
-    """Возвращает настройки для тестирования."""
-    return DevSettings()
-
-
-@lru_cache()
-def get_prod_settings():
-    """Возвращает настройки для тестирования."""
-    return ProdSettings()
+        env_file = '/Users/lizatish/PycharmProjects/Auth_sprint_1/local.env'
+        env_file_encoding = 'utf-8'
