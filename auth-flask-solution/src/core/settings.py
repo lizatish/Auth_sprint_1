@@ -1,10 +1,12 @@
 import os
+from functools import lru_cache
 
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
+
     SECRET_KEY: str
     STATIC_FOLDER: str = 'static'
     TEMPLATES_FOLDER: str = 'templates'
@@ -52,3 +54,9 @@ class DevSettings(Settings):
 
         env_file = '../../.env.local'
         env_file_encoding = 'utf-8'
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Возвращает настройки тестов."""
+    return DevSettings()
