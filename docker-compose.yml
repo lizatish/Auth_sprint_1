@@ -17,7 +17,7 @@ services:
     container_name: auth_redis
     image: redis
     volumes:
-      - ../data/redis:/data
+      - auth_redisdata:/data
     restart: always
 
   auth_postgres:
@@ -28,7 +28,8 @@ services:
       POSTGRES_PASSWORD: ${AUTH_POSTGRES_DB_PASSWORD}
       POSTGRES_DB: ${AUTH_POSTGRES_DB_NAME}
     volumes:
-      - $HOME/postgresql/data:/var/lib/postgresql/data
+      - auth_pgdata:/var/lib/postgresql/data
+
 
   ### Main service
   main_api_service:
@@ -49,12 +50,14 @@ services:
     environment:
       ES_JAVA_OPTS: "-Xms200m -Xmx200m"
       discovery.type: single-node
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
 
   main_redis:
     container_name: main_redis
     image: redis
     volumes:
-      - ../data/redis:/data
+      - main_redisdata:/data
     restart: always
 
   main_postgres:
@@ -65,7 +68,7 @@ services:
       POSTGRES_PASSWORD: ${MAIN_POSTGRES_DB_PASSWORD}
       POSTGRES_DB: ${MAIN_POSTGRES_DB_NAME}
     volumes:
-      - $HOME/postgresql/data:/var/lib/postgresql/data
+      - main_pgdata:/var/lib/postgresql/data
 
   ### ETL
   etl_genres:
@@ -121,3 +124,7 @@ services:
       - main_api_service
 volumes:
   esdata:
+  auth_pgdata:
+  auth_redisdata:
+  main_redisdata:
+  main_pgdata:

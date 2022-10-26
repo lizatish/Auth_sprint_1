@@ -1,5 +1,4 @@
 import os
-from functools import lru_cache
 
 from pydantic import BaseSettings
 
@@ -7,7 +6,6 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
     SECRET_KEY: str
-    SESSION_COOKIE_NAME: str
     STATIC_FOLDER: str = 'static'
     TEMPLATES_FOLDER: str = 'templates'
 
@@ -29,32 +27,28 @@ class Settings(BaseSettings):
 
 
 class ProdSettings(Settings):
+    """Настройки для развертки приложения."""
+
     FLASK_ENV: str = 'production'
     DEBUG: bool = False
     TESTING: bool = False
-    DATABASE_URI: str
 
     # Настройки базы данных
-    SQLALCHEMY_DATABASE_URI: str = 'postgresql://scott:tiger@localhost/mydatabase'
+    SQLALCHEMY_DATABASE_URI: str = 'postgresql://auth_postgres'
 
 
 class DevSettings(Settings):
-    FLASK_ENV: bool = 'development'
+    """Настройки для разработки приложения;"""
+
+    FLASK_ENV: str = 'development'
     DEBUG: bool = True
     TESTING: bool = True
-    DATABASE_URI: str
 
     # Настройки базы данных
     SQLALCHEMY_DATABASE_URI: str = ''
 
+    class Config:
+        """Дополнительные базовые настройки."""
 
-@lru_cache()
-def get_dev_settings():
-    """Возвращает настройки для тестирования."""
-    return DevSettings()
-
-
-@lru_cache()
-def get_prod_settings():
-    """Возвращает настройки для тестирования."""
-    return ProdSettings()
+        env_file = '../../.env.local'
+        env_file_encoding = 'utf-8'
