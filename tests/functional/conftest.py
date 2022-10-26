@@ -12,22 +12,20 @@ from core.app_factory import create_app
 from db import redis
 from tests.functional.settings import get_settings
 
-conf = get_settings()
-
 
 @pytest.fixture(scope="session")
 def event_loop() -> AbstractEventLoop:
     """Фикстура главного цикла событий."""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def redis_pool() -> AsyncIterator[Redis]:
+async def redis_pool(app: Flask) -> AsyncIterator[Redis]:
     """Фикстура соединения с redis."""
     pool = aioredis.from_url(
-        f"redis://{conf.CACHE_HOST}:{conf.CACHE_PORT}", encoding="utf-8", decode_responses=True
+        f"redis://{app.config['CACHE_HOST']}:{app.config['CACHE_PORT']}", encoding="utf-8", decode_responses=True
     )
     yield pool
     await pool.close()
@@ -39,10 +37,10 @@ async def redis_flushall(redis_pool):
     await redis_pool.flushall()
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture(scope="session")
 def app() -> Flask:
-    settings_filename = 'tests.functional.settings.TestSettings'
-    app = create_app(settings_filename)
+    settings = get_settings()
+    app = create_app(settings)
     yield app
 
 

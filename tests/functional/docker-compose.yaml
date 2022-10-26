@@ -1,6 +1,7 @@
 version: "3.3"
 services:
-  tests:
+  auth-tests:
+    container_name: auth_tests
     build:
       context: ../..
       dockerfile: tests/functional/Dockerfile
@@ -8,21 +9,22 @@ services:
       - .env
     entrypoint: >
       sh -c "python3 tests/functional/utils/wait_for_redis.py
+      && python3 tests/functional/utils/wait_fot_postgres.py
       && pytest tests/functional/src"
 
-  test-auth-redis:
-    container_name: test-auth-redis
+  test_auth_redis:
+    container_name: test_auth_redis
     image: redis
     ports:
       - "6380:6379"
     restart: always
 
-  test-auth_postgres:
-    container_name: test-auth_postgres
+  test_auth_postgres:
+    container_name: test_auth_postgres
     image: postgres:13
     environment:
-      POSTGRES_USER: ${AUTH_POSTGRES_DB_USER}
-      POSTGRES_PASSWORD: ${AUTH_POSTGRES_DB_PASSWORD}
-      POSTGRES_DB: ${AUTH_POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
     ports:
       - "5444:5432"
