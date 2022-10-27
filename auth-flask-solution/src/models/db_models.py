@@ -1,6 +1,7 @@
 import re
 import uuid
 
+from flask import current_app
 from sqlalchemy import Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declared_attr
@@ -38,4 +39,8 @@ class User(UUIDMixin, db.Model):
         return check_password_hash(self.password, password)
 
     def set_password(self, password: str):
-        self.password = generate_password_hash(password, method=f'pbkdf2:sha256:8000', salt_length=16)
+        self.password = generate_password_hash(
+            password,
+            method=current_app.config['AUTH_HASH_METHOD'],
+            salt_length=current_app.config['AUTH_HASH_SALT_LENGTH'],
+        )

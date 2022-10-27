@@ -8,9 +8,12 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
 
+    # Базовые настройки приложения
     SECRET_KEY: str
-    STATIC_FOLDER: str = 'static'
-    TEMPLATES_FOLDER: str = 'templates'
+
+    # Настройки аутентификации
+    AUTH_HASH_METHOD: str
+    AUTH_HASH_SALT_LENGTH: int
 
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'auth'
@@ -68,4 +71,4 @@ class DevSettings(Settings):
 @lru_cache()
 def get_settings() -> Settings:
     """Возвращает настройки тестов."""
-    return DevSettings()
+    return ProdSettings()
