@@ -47,6 +47,11 @@ class AuthService:
         self.db_connection.session.add(user)
         self.db_connection.session.commit()
 
+    def change_password(self, user, password: str):
+        """Создать пользователя."""
+        user.set_password(password)
+        self.db_connection.session.commit()
+
 
 
 @lru_cache()

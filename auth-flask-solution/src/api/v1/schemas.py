@@ -32,3 +32,8 @@ class PasswordChande(BaseModel):
 
     old_password: str
     new_password: str = Field(regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", description="Минимум восемь символов, минимум одна буква и одна цифра")
+
+
+class UserLoginScheme(BaseModel):
+    username: str
+    password: str

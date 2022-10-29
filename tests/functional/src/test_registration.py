@@ -6,7 +6,7 @@ def test_get_film_by_id_successful(auth_api_client):
 import pytest
 
 from ..settings import get_settings
-from ..testdata.users import (test_data_for_registration_successfull,
+from ..testdata.users_registration import (test_data_for_registration_successfull,
                               test_data_for_registration_user_exists,
                               test_data_for_registration_bad_password)
 
@@ -20,7 +20,7 @@ pytestmark = pytest.mark.asyncio
 @pytest.mark.parametrize(
     'request_body, expected_body, expected_answer', test_data_for_registration_successfull
 )
-async def test_regustration_successfull(
+async def test_registration_successfull(
         auth_api_client, db_cursor,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):
@@ -44,7 +44,7 @@ async def test_regustration_successfull(
 @pytest.mark.parametrize(
     'request_body, expected_body, expected_answer', test_data_for_registration_user_exists
 )
-async def test_regustration_user_exists(
+async def test_registration_user_exists(
         auth_api_client,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):
@@ -66,7 +66,7 @@ async def test_regustration_user_exists(
 @pytest.mark.parametrize(
     'request_body, expected_body, expected_answer', test_data_for_registration_bad_password
 )
-async def test_regustration_bad_password(
+async def test_registration_bad_password(
         auth_api_client,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):

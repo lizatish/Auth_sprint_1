@@ -7,12 +7,12 @@ class JsonService:
     @staticmethod
     def return_user_not_found():
         """Возвращает ответ пользователю, если пользователь не найден."""
-        return "User not found", HTTPStatus.NOT_FOUND
+        return {"msg": "User not found"}, HTTPStatus.NOT_FOUND
 
     @staticmethod
     def return_password_verification_failed():
         """Возвращает ответ пользователю, если введенный пароль не верен."""
-        return "Invalid password", HTTPStatus.UNAUTHORIZED
+        return {"msg": "Invalid password"}, HTTPStatus.UNAUTHORIZED
 
     @staticmethod
     def return_success_response(**kwargs):
@@ -22,4 +22,4 @@ class JsonService:
     @staticmethod
     def return_user_exists(**kwargs):
         """Возвращает ответ пользователю,сообщающий о выполнении успешной операции."""
-        return {"message": "User with this username already exists!"}, HTTPStatus.CONFLICT
+        return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT

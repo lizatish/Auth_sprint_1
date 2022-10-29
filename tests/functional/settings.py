@@ -25,7 +25,10 @@ class TestSettings(BaseSettings):
     POSTGRES_DB_PASSWORD: str = 'postgres'
     POSTGRES_DB_HOST: str = 'postgres'
     POSTGRES_DB_PORT: int = 5432
-
+    JWT_ACCESS_TOKEN_EXPIRES: int = 300000
+    
+    AUTH_HASH_METHOD: str
+    AUTH_HASH_SALT_LENGTH: int
 
 class TestSettingsDocker(TestSettings):
     """Тестовые настройки для развертки приложения через docker."""

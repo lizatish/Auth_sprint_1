@@ -14,6 +14,11 @@ from db.db_factory import get_db
 from db import redis
 from tests.functional.settings import get_settings
 from psycopg2 import extras
+from flask_jwt_extended import create_access_token
+from tests.functional.testdata.generate_tokens import users_data_for_tokens
+from tests.functional.testdata.postgresdata import users_data
+from flask_jwt_extended import JWTManager
+from datetime import timedelta
 
 
 @pytest.fixture(scope="session")
@@ -50,6 +55,8 @@ def app() -> Flask:
 @pytest.fixture(scope="session")
 def db_cursor(db_connection):
     curs_postgres = db_connection.cursor()
+    f_str = "INSERT INTO \"public\".user (id, username, password, role) values (%s, %s, %s, %s)"
+    curs_postgres.executemany(f_str, users_data)
     yield curs_postgres
     curs_postgres.execute(f"DELETE FROM public.user;")
     db_connection.commit()
@@ -66,7 +73,15 @@ def db_connection():
     pg_conn.close()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
+def generate_access_token_for_user(app):
+    result = {}
+    with app.app_context():
+        for item in users_data_for_tokens:
+            result[item['username']] = create_access_token(identity=item)
+    yield result
+
+@pytest.fixture(scope="session")
 def auth_api_client(app: Flask, redis_pool: Redis):
     """Фикстура апи-клиента."""
     redis.cache = redis_pool

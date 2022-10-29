@@ -6,7 +6,7 @@ test_data_for_registration_successfull = [
             "username": "test27",
             "password": "test8Anadssf"
         },
-        {'message': 'Successful registration'},
+        {'msg': 'Successful registration'},
         {'status': HTTPStatus.OK},
     ),
     (
@@ -14,7 +14,7 @@ test_data_for_registration_successfull = [
             "username": "test",
             "password": "qwe1Er23"
         },
-        {'message': 'Successful registration'},
+        {'msg': 'Successful registration'},
         {'status': HTTPStatus.OK},
     ),
 ]
@@ -26,7 +26,7 @@ test_data_for_registration_user_exists = [
             "password": "test8Anadssf"
         },
         {
-            "message": "User with this username already exists!"
+            "msg": "User with this username already exists!"
         },
         {'status': HTTPStatus.CONFLICT},
     ),
@@ -36,7 +36,7 @@ test_data_for_registration_user_exists = [
             "password": "test8Anadssf"
         },
         {
-            "message": "User with this username already exists!"
+            "msg": "User with this username already exists!"
         },
         {'status': HTTPStatus.CONFLICT},
     ),
