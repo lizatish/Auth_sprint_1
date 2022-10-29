@@ -29,7 +29,8 @@ services:
       POSTGRES_DB: ${AUTH_POSTGRES_DB_NAME}
     volumes:
       - auth_pgdata:/var/lib/postgresql/data
-
+    ports:
+      - 5434:5432
 
   ### Main service
   main_api_service:

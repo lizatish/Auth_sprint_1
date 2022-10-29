@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy import Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declared_attr
+from werkzeug.security import generate_password_hash,  check_password_hash
 
 from db.db_factory import get_db
 from models.general import RoleType
@@ -29,6 +30,12 @@ class UUIDMixin(BaseMixin):
 class User(UUIDMixin, db.Model):
     """Модель пользователя."""
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = db.Column(db.String, unique=True, nullable=False)
     role = db.Column(Enum(RoleType))
+    password = db.Column(db.String(1000), nullable=False)
+
+    def check_password(self,  password):
+        return check_password_hash(self.password, password)
+
+    def set_password(self, password):
+	    self.password = generate_password_hash(password, method=f'pbkdf2:sha256:8000', salt_length=16)

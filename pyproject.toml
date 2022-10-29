@@ -20,6 +20,10 @@ flask-sqlalchemy = "^3.0.2"
 psycopg2 = "^2.9.4"
 aioredis = "^2.0.1"
 httpx = "^0.23.0"
+werkzeug = "^2.2.2"
+flask-pydantic-serializer = "^0.0.4"
+flask-httpauth = "^4.7.0"
+orjson = "^3.8.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.0"

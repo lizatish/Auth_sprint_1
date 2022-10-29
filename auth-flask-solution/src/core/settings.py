@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = 'auth'
 
     # Настройки Redis
-    CACHE_HOST: str = 'redis'
+    CACHE_HOST: str = '127.0.0.1'
     CACHE_PORT: int = 6379
 
     # Корень проекта
@@ -36,7 +36,7 @@ class ProdSettings(Settings):
     TESTING: bool = False
 
     # Настройки базы данных
-    SQLALCHEMY_DATABASE_URI: str = 'postgresql://auth_postgres'
+    SQLALCHEMY_DATABASE_URI: str
 
 
 class DevSettings(Settings):
@@ -47,7 +47,7 @@ class DevSettings(Settings):
     TESTING: bool = True
 
     # Настройки базы данных
-    SQLALCHEMY_DATABASE_URI: str = ''
+    SQLALCHEMY_DATABASE_URI: str
 
     class Config:
         """Дополнительные базовые настройки."""
