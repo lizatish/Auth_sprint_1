@@ -26,6 +26,9 @@ class TestSettings(BaseSettings):
     POSTGRES_DB_HOST: str
     POSTGRES_DB_PORT: int = 5432
 
+    AUTH_HASH_METHOD: str
+    AUTH_HASH_SALT_LENGTH: int
+
 
 class TestSettingsDocker(TestSettings):
     """Тестовые настройки для развертки приложения через docker."""
@@ -68,4 +71,4 @@ class TestSettingsLocal(TestSettings):
 @lru_cache()
 def get_settings() -> TestSettings:
     """Возвращает настройки тестов."""
-    return TestSettingsDocker()
+    return TestSettingsLocal()
