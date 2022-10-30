@@ -1,4 +1,3 @@
-import aioredis
 from redis import Redis
 
 from core.app_factory import create_app
@@ -14,10 +13,10 @@ app = create_app(settings)
 #     encoding="utf-8",
 #     decode_responses=True,
 # )
-redis.cache =Redis(
-        host=app.config['CACHE_HOST'],
-        port=app.config['CACHE_PORT'],
-    )
+redis.cache = Redis(
+    host=app.config['CACHE_HOST'],
+    port=app.config['CACHE_PORT'],
+)
 
 if __name__ == '__main__':
     app.run(port=5100)
