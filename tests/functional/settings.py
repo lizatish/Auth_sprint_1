@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from functools import lru_cache
 
 from pydantic import BaseSettings
@@ -16,6 +17,8 @@ class TestSettings(BaseSettings):
     LOG_LEVEL: int = logging.DEBUG
 
     # Настройки Redis
+    CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).total_seconds()
+    CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).total_seconds()
     CACHE_PORT: int = 6379
     CACHE_HOST: str
 

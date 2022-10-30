@@ -3,19 +3,17 @@ from asyncio import AbstractEventLoop
 from typing import AsyncIterator
 
 import aioredis
-import psycopg2
 import pytest
 import pytest_asyncio
-from aioredis import Redis
 from flask import Flask
 from flask.testing import FlaskClient
-from psycopg2._psycopg import connection, cursor
-from psycopg2.extras import DictCursor
+from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
 
 from core.app_factory import create_app
 from db import redis
+from db.db_factory import get_db
 from tests.functional.settings import get_settings
-from tests.functional.testdata.login import test_data_for_success_login_user
 from tests.functional.testdata.postgresdata import users_data
 
 
@@ -51,37 +49,36 @@ def app() -> Flask:
     yield app
 
 
+# todo временная фикстура, удалить после перехода на асинхронность
+@pytest.fixture(scope="session")
+def sync_redis_pool(app) -> Redis:
+    yield Redis(
+        host=app.config['CACHE_HOST'],
+        port=app.config['CACHE_PORT'],
+    )
+
+
 @pytest.fixture()
-def auth_api_client(app: Flask, redis_pool: Redis) -> FlaskClient:
+def auth_api_client(app: Flask, sync_redis_pool: Redis) -> FlaskClient:
     """Фикстура апи-клиента."""
-    redis.cache = redis_pool
+    redis.cache = sync_redis_pool
     yield app.test_client()
 
 
-@pytest.fixture(scope="session")
-def db_cursor(db_connection) -> cursor:
-    """Фикстура курсоры бд."""
-    curs_postgres = db_connection.cursor()
+@pytest.fixture()
+def sqlalchemy_postgres(app: Flask) -> SQLAlchemy:
+    """Фикстура алхимии для бд postgres c заполненными данными о персонах."""
+    from models.db_models import User
+    with app.app_context():
+        db = get_db()
+        users = []
+        for user_data in users_data:
+            user = User(**user_data)
+            users.append(user)
+            db.session.add(user)
+            db.session.commit()
+        yield db
 
-    f_str = "INSERT INTO \"public\".user (id, username, password, role) values (%s, %s, %s, %s)"
-    curs_postgres.executemany(f_str, users_data)
-
-    yield curs_postgres
-    curs_postgres.execute(f"DELETE FROM public.user;")
-    db_connection.commit()
-
-
-@pytest.fixture(scope="session")
-def db_connection(app: Flask) -> connection:
-    """Фикстура подключения к бд."""
-    dsl = {
-        'dbname': app.config['POSTGRES_DB_NAME'],
-        'user': app.config['POSTGRES_DB_USER'],
-        'password': app.config['POSTGRES_DB_PASSWORD'],
-        'host': app.config['POSTGRES_DB_HOST'],
-        'port': app.config['POSTGRES_DB_PORT'],
-    }
-    print(dsl)
-    pg_conn = psycopg2.connect(**dsl, cursor_factory=DictCursor)
-    yield pg_conn
-    pg_conn.close()
+        for user in users:
+            db.session.delete(user)
+            db.session.commit()

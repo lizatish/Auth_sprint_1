@@ -1,5 +1,5 @@
 import pytest
-from psycopg2._psycopg import cursor
+from redis import Redis
 
 from tests.functional.settings import get_settings
 from tests.functional.testdata.login import test_data_for_success_login_user
@@ -11,21 +11,27 @@ pytestmark = pytest.mark.asyncio
 @pytest.mark.parametrize(
     'request_body, expected_body, expected_answer', test_data_for_success_login_user
 )
-async def test_success_login_user(
+def test_success_login_user(
         auth_api_client,
-        db_cursor: cursor,
+        sqlalchemy_postgres,
+        sync_redis_pool: Redis,
+        redis_flushall,
         request_body: dict,
         expected_body: dict,
         expected_answer: dict,
 ):
-    response = auth_api_client.post(f'/login', json=request_body)
-    response_body = response.json
-    db_cursor.execute(f"SELECT * FROM public.user WHERE username='{request_body['username']}';")
-    db_user = db_cursor.fetchone()
+    from models.db_models import User
 
-    assert db_user['username'] == request_body['username']
+    response = auth_api_client.post('/login', json=request_body)
+    response_body = response.json
+    user = User.query.filter_by(username=request_body['username']).first()
+
+    assert user.username == request_body['username']
     assert response.status_code == expected_answer['status']
-    assert response_body == expected_body
+    assert len(response_body) == 2
+    assert response_body['access_token']
+    assert response_body['refresh_token']
+    assert sync_redis_pool.get(f"refresh_{user.id}").decode('ascii') == response_body['refresh_token']
 
 
 def test_not_exists_login_user():
