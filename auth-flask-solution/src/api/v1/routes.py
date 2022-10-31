@@ -1,5 +1,6 @@
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_pydantic import validate
 
 from api.v1.schemas import RefreshAccessTokensResponse, UserData, PasswordChange, UserRegistration
@@ -25,6 +26,24 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
 
     access_token, refresh_token = get_auth_service().create_tokens(user)
 
+    return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
+
+
+@api_v1.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+
+    user = AuthService.get_user_by_username(identity['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    refresh_token = JsonService.get_refresh_token(request)
+    compare_refresh_tokens = get_auth_service().check_refresh_token(user.id, refresh_token)
+    if not compare_refresh_tokens:
+        return JsonService.return_invalid_refresh_token()
+
+    access_token, refresh_token = get_auth_service().create_tokens(user)
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
 
