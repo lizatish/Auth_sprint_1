@@ -22,7 +22,7 @@ class CacheService:
             f"refresh_{user_id}",
             refresh_token,
             current_app.config['CACHE_REFRESH_TOKEN_EXPIRED_SEC'],
-        )
+        )  # todo положить сюда лист
 
     def get_revoked_access_token(self, user_id: str) -> str:
         return self.db.get(f"access_{user_id}")

@@ -36,6 +36,12 @@ class AuthService:
         """Обновить access-токен."""
         self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
 
+    def check_refresh_token(self, user_id: str, refresh_token: str) -> bool:
+        current_refresh_token = self.cache_service.get_refresh_token(user_id)
+        if current_refresh_token.decode('ascii') == refresh_token:
+            return True
+        return False
+
     def create_user(self, username: str, password: str):
         """Создать пользователя."""
         role = get_or_create(self.db_connection.session, Role, label=RoleType.STANDARD)
