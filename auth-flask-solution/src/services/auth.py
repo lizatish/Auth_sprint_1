@@ -44,6 +44,21 @@ class AuthService:
         self.db_connection.session.add(user)
         self.db_connection.session.commit()
 
+    def change_password(self, user, password: str):
+        """Поменять пароль."""
+        user.set_password(password)
+        self.db_connection.session.commit()
+
+    def change_user_data(self, user, body):
+        """Поменять данные пользователя."""
+        if (body.username) and (body.username != user.username):
+            if not self.get_user_by_username(body.username):
+                user.username = body.username
+            else:
+                return False
+        self.db_connection.session.commit()
+        return True
+
     @staticmethod
     def get_user_by_username(username: str) -> User:
         """Получить пользователя по его username."""
