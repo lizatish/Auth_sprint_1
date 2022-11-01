@@ -4,8 +4,8 @@ test_data_for_change_password_successfull = [
     (
         {"username": "oleg"},
         {
-            "old_password":"Ldfj78!ksjd",
-            "new_password":"tedsvsd1A"
+            "old_password": "Ldfj78!ksjd",
+            "new_password": "tedsvsd1A"
         },
         {'msg': 'Successful password change'},
         {'status': HTTPStatus.OK},
@@ -13,8 +13,8 @@ test_data_for_change_password_successfull = [
     (
         {"username": "liza"},
         {
-            "old_password":"ivanivanov",
-            "new_password":"tedsvsd1A"
+            "old_password": "ivanivanov",
+            "new_password": "tedsvsd1A"
         },
         {'msg': 'Successful password change'},
         {'status': HTTPStatus.OK},
@@ -25,8 +25,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "oleg"},
         {
-            "old_password":"Ldfj78!ksjdk",
-            "new_password":"tedsvsd1A"
+            "old_password": "Ldfj78!ksjdk",
+            "new_password": "tedsvsd1A"
         },
         {
             "msg": "Invalid password"
@@ -36,8 +36,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "liza"},
         {
-            "old_password":"LKjj78!ksjd",
-            "new_password":"tedsvsd1A"
+            "old_password": "LKjj78!ksjd",
+            "new_password": "tedsvsd1A"
         },
         {
             "msg": "Invalid password"
@@ -47,8 +47,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "oleg"},
         {
-            "old_password":"tedsvsd1A",
-            "new_password":"teds"
+            "old_password": "tedsvsd1A",
+            "new_password": "teds"
         },
         {
             "validation_error": {
@@ -68,8 +68,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "liza"},
         {
-            "old_password":"tedsvsd1A",
-            "new_password":"123455667890"
+            "old_password": "tedsvsd1A",
+            "new_password": "123455667890"
         },
         {
             "validation_error": {
@@ -89,8 +89,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "liza"},
         {
-            "old_password":"tedsvsd1A",
-            "ne_password":"qwe123QWE"
+            "old_password": "tedsvsd1A",
+            "ne_password": "qwe123QWE"
         },
         {
             "validation_error": {
@@ -110,8 +110,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "liza"},
         {
-            "ol_password":"tedsvsd1A",
-            "new_password":"qwe123QWE"
+            "ol_password": "tedsvsd1A",
+            "new_password": "qwe123QWE"
         },
         {
             "validation_error": {
@@ -131,8 +131,8 @@ test_data_for_change_password_fail = [
     (
         {"username": "liza"},
         {
-            "ol_password":"tedsvsd1A",
-            "ne_password":"qwe123QWE"
+            "ol_password": "tedsvsd1A",
+            "ne_password": "qwe123QWE"
         },
         {
             "validation_error": {
