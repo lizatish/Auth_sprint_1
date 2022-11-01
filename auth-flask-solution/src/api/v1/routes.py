@@ -2,17 +2,18 @@ from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_pydantic import validate
 
-from api.v1.schemas import UserLoginScheme, UserRegistration, PasswordChange, UserData
+from api.v1.schemas import RefreshAccessTokensResponse, UserData, PasswordChange, UserRegistration
+from api.v1.schemas import UserLoginScheme
 from services.auth import AuthService, get_auth_service
 from services.json import JsonService
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api_v1 = Blueprint('api_v1', __name__)
 
 
 @api_v1.route("/login", methods=["POST"])
 @validate()
-def login(body: UserLoginScheme):
+def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
+    """Позволяет пользователю войти в систему."""
     user = AuthService.get_user_by_username(body.username)
     if not user:
         return JsonService.return_user_not_found()
@@ -27,7 +28,8 @@ def login(body: UserLoginScheme):
 
 @api_v1.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
-def refresh():
+def refresh() -> RefreshAccessTokensResponse:
+    """Обновляет refresh, access токены по валидному refresh-токену."""
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])

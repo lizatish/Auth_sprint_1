@@ -50,6 +50,7 @@ def app() -> Flask:
 # todo временная фикстура, удалить после перехода на асинхронность
 @pytest.fixture(scope="session")
 def sync_redis_pool(app) -> Redis:
+    """Временная фикстура синхронного redis."""
     redis = Redis(
         host=app.config['CACHE_HOST'],
         port=app.config['CACHE_PORT'],

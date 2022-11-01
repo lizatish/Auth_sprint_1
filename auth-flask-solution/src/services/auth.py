@@ -37,6 +37,7 @@ class AuthService:
         self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
 
     def check_refresh_token(self, user_id: str, refresh_token: str) -> bool:
+        """Сравнивает refresh-токен с тем, что лежит в redis."""
         current_refresh_token = self.cache_service.get_refresh_token(user_id)
         if current_refresh_token.decode('ascii') == refresh_token:
             return True
