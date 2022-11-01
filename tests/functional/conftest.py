@@ -14,7 +14,7 @@ from core.app_factory import create_app
 from db import redis
 from db.db_factory import get_db
 from tests.functional.settings import get_settings
-from tests.functional.testdata.postgresdata import users_data
+from tests.functional.testdata.postgresdata import users_data, roles_data
 
 
 @pytest.fixture(scope="session")
@@ -68,17 +68,33 @@ def auth_api_client(app: Flask, sync_redis_pool: Redis) -> FlaskClient:
 @pytest.fixture()
 def sqlalchemy_postgres(app: Flask) -> SQLAlchemy:
     """Фикстура алхимии для бд postgres c заполненными данными о персонах."""
-    from models.db_models import User
+    from models.db_models import User, Role
     with app.app_context():
         db = get_db()
-        users = []
+
+        for role_data in roles_data:
+            role = Role(**role_data)
+            db.session.add(role)
+            db.session.commit()            
+
         for user_data in users_data:
-            user = User(**user_data)
-            users.append(user)
+            role = Role.query.filter_by(label=user_data['role']).first()
+            user = User(
+                id=user_data['id'],
+                username=user_data['username'],
+                password=user_data['password'],
+                role=role
+            )
             db.session.add(user)
             db.session.commit()
         yield db
 
+        users = User.query.all()
         for user in users:
             db.session.delete(user)
+            db.session.commit()
+
+        roles = Role.query.all()
+        for role in roles:
+            db.session.delete(role)
             db.session.commit()

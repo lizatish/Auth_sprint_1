@@ -23,10 +23,10 @@ class TestSettings(BaseSettings):
     CACHE_HOST: str
 
     # Настройки Postgres
-    POSTGRES_DB_NAME: str
-    POSTGRES_DB_USER: str
-    POSTGRES_DB_PASSWORD: str
-    POSTGRES_DB_HOST: str
+    POSTGRES_DB_NAME: str = 'postgres'
+    POSTGRES_DB_USER: str = 'postgres'
+    POSTGRES_DB_PASSWORD: str = 'postgres'
+    POSTGRES_DB_HOST: str = 'postgres'
     POSTGRES_DB_PORT: int = 5432
 
     AUTH_HASH_METHOD: str
