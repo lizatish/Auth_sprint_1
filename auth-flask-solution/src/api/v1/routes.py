@@ -31,7 +31,8 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
 
 @api_v1.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
-def refresh():
+def refresh() -> RefreshAccessTokensResponse:
+    """Обновляет refresh, access токены по валидному refresh-токену."""
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
