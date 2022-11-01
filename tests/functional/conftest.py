@@ -8,6 +8,7 @@ import pytest_asyncio
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import create_access_token
 from redis import Redis
 
 from core.app_factory import create_app
@@ -15,6 +16,7 @@ from db import redis
 from db.db_factory import get_db
 from tests.functional.settings import get_settings
 from tests.functional.testdata.postgresdata import users_data, roles_data
+from tests.functional.testdata.generate_tokens import users_data_for_tokens
 
 
 @pytest.fixture(scope="session")
@@ -63,6 +65,15 @@ def auth_api_client(app: Flask, sync_redis_pool: Redis) -> FlaskClient:
     """Фикстура апи-клиента."""
     redis.cache = sync_redis_pool
     yield app.test_client()
+
+
+@pytest.fixture(scope="session")
+def generate_access_token_for_user(app):
+    result = {}
+    with app.app_context():
+        for item in users_data_for_tokens:
+            result[item['username']] = create_access_token(identity=item)
+    yield result
 
 
 @pytest.fixture()
