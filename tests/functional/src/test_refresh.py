@@ -1,0 +1,139 @@
+from datetime import timedelta
+
+import pytest
+from flask.testing import FlaskClient
+from flask_jwt_extended import create_refresh_token
+from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
+
+from tests.functional.settings import get_settings
+from tests.functional.testdata.refresh import test_data_for_update_user_refresh_token, \
+    test_data_unsuccess_usage_old_refresh_token, test_data_unsuccess_update_user_refresh_token_not_exists, \
+    test_data_unsuccess_update_user_refresh_token_another_role, \
+    test_data_unsuccess_update_user_refresh_token_validation_error
+
+conf = get_settings()
+pytestmark = pytest.mark.asyncio
+
+
+@pytest.mark.parametrize(
+    'user_data, expected_answer', test_data_for_update_user_refresh_token
+)
+def test_success_update_user_refresh_token(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+):
+    from models.db_models import User
+    user = User.query.filter_by(username=user_data['username']).first()
+
+    old_refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
+    response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {old_refresh_token}"},
+    )
+    response_body = response.json
+
+    assert response.status_code == expected_answer['status']
+    assert len(response_body) == 2
+    assert response_body['access_token']
+    assert response_body['refresh_token']
+    assert response_body['refresh_token'] != old_refresh_token
+    assert sync_redis_pool.get(f"refresh_{user.id}").decode('ascii') == response_body['refresh_token']
+
+
+@pytest.mark.parametrize(
+    'user_data, expected_answer, expected_body', test_data_unsuccess_usage_old_refresh_token
+)
+def test_unsuccess_usage_old_refresh_token(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    from models.db_models import User
+    user = User.query.filter_by(username=user_data['username']).first()
+    old_refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
+
+    good_response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {old_refresh_token}"},
+    )
+    bad_response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {old_refresh_token}"},
+    )
+
+    assert bad_response.json == expected_body
+    assert bad_response.status_code == expected_answer['status']
+    assert sync_redis_pool.get(f"refresh_{user.id}").decode('ascii') == good_response.json['refresh_token']
+
+
+@pytest.mark.parametrize(
+    'user_data, expected_answer, expected_body', test_data_unsuccess_update_user_refresh_token_not_exists
+)
+def test_unsuccess_update_user_refresh_token_not_exists(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    refresh_token = create_refresh_token(identity=user_data, expires_delta=timedelta(days=30))
+
+    response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {refresh_token}"},
+    )
+    assert response.json == expected_body
+    assert response.status_code == expected_answer['status']
+
+
+@pytest.mark.parametrize(
+    'user_data, expected_answer, expected_body', test_data_unsuccess_update_user_refresh_token_another_role
+)
+def test_unsuccess_update_user_refresh_token_another_role(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    from models.db_models import User
+    refresh_token = create_refresh_token(identity=user_data, expires_delta=timedelta(days=30))
+
+    response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {refresh_token}"},
+    )
+    user = User.query.filter_by(username=user_data['username']).first()
+
+    assert response.json == expected_body
+    assert user
+    assert response.status_code == expected_answer['status']
+
+
+@pytest.mark.parametrize(
+    'refresh_token, expected_answer, expected_body', test_data_unsuccess_update_user_refresh_token_validation_error
+)
+def test_unsuccess_update_user_refresh_token_validation_error(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        sync_redis_pool: Redis,
+        refresh_token: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    response = auth_api_client.post(
+        '/refresh',
+        headers={"Authorization": f"Bearer {refresh_token}"},
+    )
+
+    assert response.json == expected_body
+    assert response.status_code == expected_answer['status']
