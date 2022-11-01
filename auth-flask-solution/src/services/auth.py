@@ -5,11 +5,9 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 from db.cache import CacheStorage
 from db.redis import get_redis_storage
 from models.db_models import User, Role, db
+from models.general import RoleType
 from services.cache import CacheService
 from services.utils import get_or_create
-from core.settings import get_settings
-
-conf = get_settings()
 
 
 class AuthService:
@@ -40,7 +38,7 @@ class AuthService:
 
     def create_user(self, username: str, password: str):
         """Создать пользователя."""
-        role = get_or_create(self.db_connection.session, Role, label=conf.DEFAULT_ROLE_NAME)
+        role = get_or_create(self.db_connection.session, Role, label=RoleType.STANDARD)
         user = User(username=username, role=role)
         user.set_password(password)
         self.db_connection.session.add(user)

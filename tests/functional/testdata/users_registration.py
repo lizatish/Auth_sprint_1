@@ -49,14 +49,11 @@ test_data_for_registration_fail = [
             "validation_error": {
                 "body_params": [
                     {
-                        "ctx": {
-                            "pattern": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"
-                        },
                         "loc": [
                             "password"
                         ],
-                        "msg": "string does not match regex \"^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$\"",
-                        "type": "value_error.str.regex"
+                        "msg": "Минимум восемь символов, минимум одна буква и одна цифра.",
+                        "type": "value_error"
                     }
                 ]
             }
@@ -72,14 +69,11 @@ test_data_for_registration_fail = [
             "validation_error": {
                 "body_params": [
                     {
-                        "ctx": {
-                            "pattern": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$"
-                        },
                         "loc": [
                             "password"
                         ],
-                        "msg": "string does not match regex \"^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$\"",
-                        "type": "value_error.str.regex"
+                        "msg": "Минимум восемь символов, минимум одна буква и одна цифра.",
+                        "type": "value_error"
                     }
                 ]
             }

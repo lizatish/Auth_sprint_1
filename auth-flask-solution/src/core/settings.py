@@ -67,7 +67,7 @@ class DevSettings(Settings):
     class Config:
         """Дополнительные базовые настройки."""
 
-        env_file = '/home/oleg/yandex/Auth_sprint_1/.env.local'
+        env_file = '../../.env.local'
         env_file_encoding = 'utf-8'
 
 

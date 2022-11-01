@@ -1,4 +1,5 @@
 from tests.functional.utils.hash import hash_password
+from models.general import RoleType
 
 users_data = [
 
@@ -6,37 +7,37 @@ users_data = [
         'id': '16bdbb16-d3bf-4184-b08e-e2b2eabeee7f',
         'username': 'ivan',
         'password': hash_password('ivanivanov'),
-        'role': 'standard'
+        'role': RoleType.STANDARD.name
     },
     {
         'id': '15e794ed-2286-4690-b092-793f5e51f0ec',
         'username': 'liza',
         'password': hash_password('ivanivanov'),
-        'role': 'standard'
+        'role': RoleType.STANDARD.name
     },
     {
         'id': 'bb81ead9-b728-461b-a0a9-eacc9b7127a2',
         'username': 'oleg',
         'password': hash_password('Ldfj78!ksjd'),
-        'role': 'privileged'
+        'role': RoleType.PRIVILEGED.name
     },
     {
         'id': 'e2da75c0-8f07-4d20-bfc4-8afcf58e7a2c',
         'username': 'admin',
         'password': hash_password('adminADMINOV1!'),
-        'role': 'admin'
+        'role': RoleType.ADMIN.name
     },
 ]
 
 roles_data = [
 
     {
-        'label': 'standard'
+        'label': RoleType.STANDARD
     },
     {
-        'label': 'privileged'
+        'label': RoleType.PRIVILEGED
     },
     {
-        'label': 'admin'
+        'label': RoleType.ADMIN
     }
 ]

@@ -2,12 +2,13 @@ import re
 import uuid
 
 from flask import current_app
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.db_factory import get_db
+from models.general import RoleType
 
 
 db = get_db()
@@ -31,7 +32,7 @@ class UUIDMixin(BaseMixin):
 class Role(UUIDMixin, db.Model):
     """Модель пользователя."""
 
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(Enum(RoleType))
     users = db.relationship('User', backref='role')
 
 

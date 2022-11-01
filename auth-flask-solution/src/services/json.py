@@ -28,13 +28,3 @@ class JsonService:
     def return_user_exists():
         """Возвращает ответ пользователю, если такой логин уже используется."""
         return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
-
-    @staticmethod
-    def return_role_exists():
-        """Возвращает ответ пользователю, если такая роль уже создана."""
-        return {"msg": "Role exists!"}, HTTPStatus.CONFLICT
-
-    @staticmethod
-    def validation_role_error():
-        """Возвращает ответ пользователю, если переданы неверные данные для создания роли."""
-        return {"msg": "Bad data for role create"}, HTTPStatus.BAD_REQUEST
