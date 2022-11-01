@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from functools import lru_cache
 
 from pydantic import BaseSettings
@@ -7,15 +8,20 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
 
+    # Базовые настройки приложения
     SECRET_KEY: str
-    STATIC_FOLDER: str = 'static'
-    TEMPLATES_FOLDER: str = 'templates'
+
+    # Настройки аутентификации
+    AUTH_HASH_METHOD: str
+    AUTH_HASH_SALT_LENGTH: int
 
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'auth'
 
     # Настройки Redis
-    CACHE_HOST: str = 'redis'
+    CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).seconds
+    CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).seconds
+    CACHE_HOST: str
     CACHE_PORT: int = 6379
 
     # Корень проекта
@@ -35,6 +41,9 @@ class ProdSettings(Settings):
     DEBUG: bool = False
     TESTING: bool = False
 
+    # Настройки Redis
+    CACHE_HOST: str = 'auth_redis'
+
     # Настройки базы данных
     SQLALCHEMY_DATABASE_URI: str = 'postgresql://auth_postgres'
 
@@ -46,8 +55,11 @@ class DevSettings(Settings):
     DEBUG: bool = True
     TESTING: bool = True
 
+    # Настройки Redis
+    CACHE_HOST: str = 'localhost'
+
     # Настройки базы данных
-    SQLALCHEMY_DATABASE_URI: str = ''
+    SQLALCHEMY_DATABASE_URI: str
 
     class Config:
         """Дополнительные базовые настройки."""
@@ -59,4 +71,4 @@ class DevSettings(Settings):
 @lru_cache()
 def get_settings() -> Settings:
     """Возвращает настройки тестов."""
-    return DevSettings()
+    return ProdSettings()
