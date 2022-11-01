@@ -2,13 +2,14 @@ import re
 import uuid
 
 from flask import current_app
-from sqlalchemy import Enum
+from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.db_factory import get_db
 from models.general import RoleType
+
 
 db = get_db()
 
@@ -28,11 +29,18 @@ class UUIDMixin(BaseMixin):
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
 
+class Role(UUIDMixin, db.Model):
+    """Модель пользователя."""
+
+    label = db.Column(Enum(RoleType))
+    users = db.relationship('User', backref='role')
+
+
 class User(UUIDMixin, db.Model):
     """Модель пользователя."""
 
     username = db.Column(db.String, unique=True, nullable=False)
-    role = db.Column(Enum(RoleType))
+    role_id = db.Column(UUID(as_uuid=True), ForeignKey("role.id"))
     password = db.Column(db.String(400), nullable=False)
 
     def check_password(self, password: str) -> bool:

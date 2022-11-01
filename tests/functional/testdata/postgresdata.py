@@ -1,5 +1,5 @@
-from models.general import RoleType
 from tests.functional.utils.hash import hash_password
+from models.general import RoleType
 
 users_data = [
 
@@ -27,4 +27,17 @@ users_data = [
         'password': hash_password('adminADMINOV1!'),
         'role': RoleType.ADMIN.name
     },
+]
+
+roles_data = [
+
+    {
+        'label': RoleType.STANDARD
+    },
+    {
+        'label': RoleType.PRIVILEGED
+    },
+    {
+        'label': RoleType.ADMIN
+    }
 ]

@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'auth'
 
+    # Стандартное название роли
+    DEFAULT_ROLE_NAME: str = 'standard'
+
     # Настройки Redis
     CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).seconds
     CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).seconds
@@ -64,7 +67,7 @@ class DevSettings(Settings):
     class Config:
         """Дополнительные базовые настройки."""
 
-        env_file = '/Users/lizatish/PycharmProjects/Auth_sprint_1/.env.local'
+        env_file = '../../.env.local'
         env_file_encoding = 'utf-8'
 
 
