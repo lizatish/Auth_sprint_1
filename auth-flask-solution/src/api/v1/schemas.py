@@ -24,7 +24,7 @@ class UserRegistration(BaseModel):
 
 
 class PasswordChange(BaseModel):
-    """Схема жанра."""
+    """Схема смены пароля."""
 
     old_password: str
     new_password: str
@@ -38,4 +38,5 @@ class PasswordChange(BaseModel):
 
 
 class UserData(BaseModel):
+    """Схема изменения данных пользователя."""
     username: Optional[str]
