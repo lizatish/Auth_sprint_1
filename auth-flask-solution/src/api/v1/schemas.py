@@ -1,6 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, Field
 import orjson
+from typing import Optional
 
 
 def orjson_dumps(v, *, default):
@@ -37,3 +38,19 @@ class PasswordChande(BaseModel):
 class UserLoginScheme(BaseModel):
     username: str
     password: str
+
+
+class UserData(BaseModel):
+    username: Optional[str]
+
+
+class Role(BaseModel):
+    label: str
+
+
+class RoleRepresentation(BaseModel):
+    id: UUID
+    label: str
+
+class RoleManagerQuery(BaseModel):
+    role_id: UUID

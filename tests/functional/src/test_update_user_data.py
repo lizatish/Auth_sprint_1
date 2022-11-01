@@ -36,26 +36,3 @@ async def test_change_password_successfull(
     assert response.status_code == expected_answer['status']
     assert response_body == expected_body
 
-
-
-@pytest.mark.parametrize(
-    'username, request_body, expected_body, expected_answer', test_data_for_change_password_fail
-)
-async def test_change_password_fail(
-        auth_api_client, generate_access_token_for_user,
-        request_body: dict, expected_body: dict, expected_answer: dict, username: dict
-):
-    """
-    Тест для проверки ошибки смены пароля.
-
-    Проверяет:
-    - неудачный ответ от серивиса
-    """
-    token = generate_access_token_for_user[username['username']]
-    headers = {'Authorization': f'Bearer {token}', 'content-type': 'application/json'}
-
-    response = auth_api_client.post(f'/password-change', json=request_body, headers=headers)
-    response_body = response.json
-
-    assert response.status_code == expected_answer['status']
-    assert response_body == expected_body

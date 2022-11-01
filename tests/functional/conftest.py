@@ -46,7 +46,7 @@ async def redis_flushall(redis_pool):
 
 
 @pytest_asyncio.fixture(scope="session")
-def app() -> Flask:
+def app(db_connection) -> Flask:
     settings = get_settings()
     app = create_app(settings)
     yield app
@@ -57,6 +57,7 @@ def db_cursor(db_connection):
     curs_postgres = db_connection.cursor()
     f_str = "INSERT INTO \"public\".user (id, username, password, role) values (%s, %s, %s, %s)"
     curs_postgres.executemany(f_str, users_data)
+    db_connection.commit()
     yield curs_postgres
     curs_postgres.execute(f"DELETE FROM public.user;")
     db_connection.commit()

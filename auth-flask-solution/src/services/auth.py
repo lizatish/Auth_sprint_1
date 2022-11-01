@@ -1,13 +1,16 @@
 from functools import lru_cache
-
 from flask_jwt_extended import create_access_token, create_refresh_token
 
 from db.cache import CacheStorage
 from db.redis import get_redis_storage
-from models.db_models import User, db
+from models.db_models import User, db, Role
 from services.cache import CacheService
 from models.general import RoleType
+from services.json import JsonService
+from services.utils import get_or_create
+from core.settings import get_settings
 
+conf = get_settings()
 
 class AuthService:
     """Сервис авторизации и аутентификации."""
@@ -23,12 +26,10 @@ class AuthService:
 
     def create_tokens(self, user: User):
         """Создать access и refresh токены для пользователя."""
-        token_user_data = {"username": user.username, "role": user.role.value}
+        token_user_data = {"username": user.username, "role": user.role.label}
         access_token = create_access_token(identity=token_user_data)
         refresh_token = create_refresh_token(identity=token_user_data)
-
         self.update_refresh_token(user_id=user.id, refresh_token=refresh_token)
-
         return access_token, refresh_token
 
     def update_revoked_access_token(self, user_id: str, revoked_access_token: str):
@@ -42,17 +43,34 @@ class AuthService:
 
     def create_user(self, username: str, password: str):
         """Создать пользователя."""
-        user = User(username=username, role=RoleType.STANDARD)
+        role = get_or_create(self.db_connection.session, Role, label=conf.DEFAULT_ROLE_NAME)
+        user = User(username=username, role=role)
         user.set_password(password)
         self.db_connection.session.add(user)
         self.db_connection.session.commit()
 
     def change_password(self, user, password: str):
-        """Создать пользователя."""
+        """Поменять пароль."""
         user.set_password(password)
         self.db_connection.session.commit()
 
+    def change_user_data(self, user, body):
+        """Поменять данные пользователя."""
+        if (body.username) and (body.username != user.username):
+            if not self.get_user_by_username(body.username):
+                user.username = body.username
+            else:
+                return False
+        self.db_connection.session.commit()
+        return True
 
+    @staticmethod
+    def get_user_by_id(user_id: str):
+        """Получить пользователя по его id."""
+        try:
+            return User.query.get(user_id)
+        except:
+            return None
 
 @lru_cache()
 def get_auth_service() -> AuthService:

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     # Название проекта. Используется в Swagger-документации
     PROJECT_NAME: str = 'auth'
 
+    DEFAULT_ROLE_NAME: str = 'STANDART'
+
     # Настройки Redis
     CACHE_HOST: str = '127.0.0.1'
     CACHE_PORT: int = 6379

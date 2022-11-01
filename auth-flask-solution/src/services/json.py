@@ -10,6 +10,12 @@ class JsonService:
         return {"msg": "User not found"}, HTTPStatus.NOT_FOUND
 
     @staticmethod
+    def return_role_not_found():
+        """Возвращает ответ пользователю, если пользователь не найден."""
+        return {"msg": "Role not found"}, HTTPStatus.NOT_FOUND
+
+
+    @staticmethod
     def return_password_verification_failed():
         """Возвращает ответ пользователю, если введенный пароль не верен."""
         return {"msg": "Invalid password"}, HTTPStatus.UNAUTHORIZED
@@ -23,3 +29,13 @@ class JsonService:
     def return_user_exists(**kwargs):
         """Возвращает ответ пользователю,сообщающий о выполнении успешной операции."""
         return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
+
+    @staticmethod
+    def return_role_exists(**kwargs):
+        """Возвращает ответ пользователю,сообщающий о выполнении успешной операции."""
+        return {"msg": "Role exists!"}, HTTPStatus.CONFLICT
+
+    @staticmethod
+    def validation_role_error(**kwargs):
+        """Возвращает ответ пользователю,сообщающий о выполнении успешной операции."""
+        return {"msg": "Bad data for role create"}, HTTPStatus.BAD_REQUEST
