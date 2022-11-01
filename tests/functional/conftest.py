@@ -5,12 +5,16 @@ from typing import AsyncIterator
 import aioredis
 import pytest
 import pytest_asyncio
-from aioredis import Redis
 from flask import Flask
+from flask.testing import FlaskClient
+from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
 
 from core.app_factory import create_app
 from db import redis
+from db.db_factory import get_db
 from tests.functional.settings import get_settings
+from tests.functional.testdata.postgresdata import users_data
 
 
 @pytest.fixture(scope="session")
@@ -39,13 +43,42 @@ async def redis_flushall(redis_pool):
 
 @pytest_asyncio.fixture(scope="session")
 def app() -> Flask:
+    """Фикстура главного приложения."""
     settings = get_settings()
     app = create_app(settings)
     yield app
 
 
+# todo временная фикстура, удалить после перехода на асинхронность
+@pytest.fixture(scope="session")
+def sync_redis_pool(app) -> Redis:
+    yield Redis(
+        host=app.config['CACHE_HOST'],
+        port=app.config['CACHE_PORT'],
+    )
+
+
 @pytest.fixture()
-def auth_api_client(app: Flask, redis_pool: Redis):
+def auth_api_client(app: Flask, sync_redis_pool: Redis) -> FlaskClient:
     """Фикстура апи-клиента."""
-    redis.cache = redis_pool
+    redis.cache = sync_redis_pool
     yield app.test_client()
+
+
+@pytest.fixture()
+def sqlalchemy_postgres(app: Flask) -> SQLAlchemy:
+    """Фикстура алхимии для бд postgres c заполненными данными о персонах."""
+    from models.db_models import User
+    with app.app_context():
+        db = get_db()
+        users = []
+        for user_data in users_data:
+            user = User(**user_data)
+            users.append(user)
+            db.session.add(user)
+            db.session.commit()
+        yield db
+
+        for user in users:
+            db.session.delete(user)
+            db.session.commit()

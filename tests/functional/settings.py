@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from functools import lru_cache
 
 from pydantic import BaseSettings
@@ -16,6 +17,8 @@ class TestSettings(BaseSettings):
     LOG_LEVEL: int = logging.DEBUG
 
     # Настройки Redis
+    CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).total_seconds()
+    CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).total_seconds()
     CACHE_PORT: int = 6379
     CACHE_HOST: str
 
@@ -25,6 +28,9 @@ class TestSettings(BaseSettings):
     POSTGRES_DB_PASSWORD: str
     POSTGRES_DB_HOST: str
     POSTGRES_DB_PORT: int = 5432
+
+    AUTH_HASH_METHOD: str
+    AUTH_HASH_SALT_LENGTH: int
 
 
 class TestSettingsDocker(TestSettings):
@@ -68,4 +74,4 @@ class TestSettingsLocal(TestSettings):
 @lru_cache()
 def get_settings() -> TestSettings:
     """Возвращает настройки тестов."""
-    return TestSettingsDocker()
+    return TestSettingsLocal()

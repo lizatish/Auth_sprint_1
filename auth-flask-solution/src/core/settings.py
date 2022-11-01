@@ -27,12 +27,6 @@ class Settings(BaseSettings):
     # Корень проекта
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    class Config:
-        """Дополнительные базовые настройки."""
-
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
-
 
 class ProdSettings(Settings):
     """Настройки для развертки приложения."""
@@ -46,6 +40,12 @@ class ProdSettings(Settings):
 
     # Настройки базы данных
     SQLALCHEMY_DATABASE_URI: str = 'postgresql://auth_postgres'
+
+    class Config:
+        """Дополнительные базовые настройки."""
+
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
 
 
 class DevSettings(Settings):
@@ -64,11 +64,11 @@ class DevSettings(Settings):
     class Config:
         """Дополнительные базовые настройки."""
 
-        env_file = '../../.env.local'
+        env_file = '/Users/lizatish/PycharmProjects/Auth_sprint_1/.env.local'
         env_file_encoding = 'utf-8'
 
 
 @lru_cache()
 def get_settings() -> Settings:
     """Возвращает настройки тестов."""
-    return ProdSettings()
+    return DevSettings()
