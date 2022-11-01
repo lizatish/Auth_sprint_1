@@ -18,7 +18,6 @@ def test_success_login_user(
         auth_api_client: FlaskClient,
         sqlalchemy_postgres: SQLAlchemy,
         sync_redis_pool: Redis,
-        redis_flushall,
         request_body: dict,
         expected_answer: dict,
 ):

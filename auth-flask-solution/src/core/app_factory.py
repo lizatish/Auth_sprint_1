@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_jwt_extended import JWTManager
 
 from core.jwt import create_jwt
 from db.db_factory import create_db

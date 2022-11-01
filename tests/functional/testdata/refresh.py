@@ -29,16 +29,16 @@ test_data_unsuccess_update_user_refresh_token_not_exists = [
             "username": "not exists",
             "role": RoleType.STANDARD.name
         },
-        {'status': HTTPStatus.NOT_FOUND},
-        {'msg': 'User not found'}
+        {'status': HTTPStatus.UNAUTHORIZED},
+        {'msg': 'Token has been revoked'}
     ),
     (
         {
             "username": "ot exists2",
             "role": RoleType.ADMIN.name
         },
-        {'status': HTTPStatus.NOT_FOUND},
-        {'msg': 'User not found'},
+        {'status': HTTPStatus.UNAUTHORIZED},
+        {'msg': 'Token has been revoked'},
     )
 ]
 

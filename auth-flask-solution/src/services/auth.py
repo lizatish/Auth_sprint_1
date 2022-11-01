@@ -24,7 +24,7 @@ class AuthService:
 
     def create_tokens(self, user: User):
         """Создать access и refresh токены для пользователя."""
-        token_user_data = {"username": user.username, "role": user.role.label}
+        token_user_data = {"username": user.username, "role": user.role.label.name}
         access_token = create_access_token(identity=token_user_data)
         refresh_token = create_refresh_token(identity=token_user_data)
 
