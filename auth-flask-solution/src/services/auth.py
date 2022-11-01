@@ -66,6 +66,19 @@ class AuthService:
         self.db_connection.session.commit()
         return True
 
+    def logout_user(self, user_id: str, revoked_access_token: str):
+        """Разлогинивает пользователя."""
+        self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
+        self.cache_service.delete_refresh_token(user_id)
+
+    def check_access_token_is_revoked(self, user_id: str, access_token: str) -> bool:
+        """Проверяет валидный access-токен на то, что он не лежит в базе отозванных токенов."""
+        revokes_access_tokens_bin = self.cache_service.get_revoked_access_token(user_id)
+        revokes_access_tokens = [token.decode('ascii') for token in revokes_access_tokens_bin]
+        if access_token in revokes_access_tokens:
+            return False
+        return True
+
     @staticmethod
     def get_user_by_username(username: str) -> User:
         """Получить пользователя по его username."""

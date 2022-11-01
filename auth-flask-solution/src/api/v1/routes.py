@@ -36,7 +36,7 @@ def refresh() -> RefreshAccessTokensResponse:
     if not user:
         return JsonService.return_user_not_found()
 
-    refresh_token = JsonService.get_refresh_token(request)
+    refresh_token = JsonService.get_authorization_header_token(request)
     compare_refresh_tokens = get_auth_service().check_refresh_token(user.id, refresh_token)
     if not compare_refresh_tokens:
         return JsonService.return_invalid_refresh_token()
@@ -81,3 +81,23 @@ def change_user_data(body: UserData):
     if not created:
         return JsonService.return_user_exists()
     return JsonService.return_success_response(msg='Successful user data changed')
+
+
+@api_v1.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    """Разлогинивает пользователя."""
+    identity = get_jwt_identity()
+
+    user = AuthService.get_user_by_username(identity['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    access_token = JsonService.get_authorization_header_token(request)
+    compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, access_token)
+    if not compare_access_tokens:
+        return JsonService.return_invalid_access_token()
+
+    get_auth_service().logout_user(user.id, access_token)
+
+    return JsonService.return_success_response(msg="User has been logged out")

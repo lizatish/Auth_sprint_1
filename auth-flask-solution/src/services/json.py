@@ -35,8 +35,13 @@ class JsonService:
         return {"msg": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
 
     @staticmethod
-    def get_refresh_token(request: Request):
-        """Возвращает refresh-token из заголовка запроса."""
+    def return_invalid_access_token() -> (str, int):
+        """Возвращает невалидный access-токен."""
+        return {"msg": "Access token was revoked"}, HTTPStatus.UNAUTHORIZED
+
+    @staticmethod
+    def get_authorization_header_token(request: Request):
+        """Возвращает токен из заголовка запроса."""
         headers = request.headers
         bearer = headers.get('Authorization')
         return bearer.split()[1]
