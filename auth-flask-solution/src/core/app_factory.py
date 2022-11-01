@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
 
+from core.jwt import create_jwt
 from db.db_factory import create_db
 
 
@@ -13,7 +14,7 @@ def create_app(config_filename: object) -> Flask:
     # Инициализация БД
     create_db(app)
 
-    JWTManager(app)
+    create_jwt(app)
 
     # Регистрация отдельных компонентов (API)
     from api.v1.routes import api_v1
