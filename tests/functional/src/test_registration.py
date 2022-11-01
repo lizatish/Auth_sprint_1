@@ -38,7 +38,7 @@ async def test_registration_successfull(
     'request_body, expected_body, expected_answer', test_data_for_registration_fail
 )
 async def test_registration_fail(
-        auth_api_client: FlaskClient,
+        auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):
     """
