@@ -31,11 +31,9 @@ def test_success_logout(
     from models.db_models import User
     user = User.query.filter_by(username=user_data['username']).first()
     access_token = generate_access_token_for_user[user_data['username']]
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.post(
-        '/logout',
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
+    response = auth_api_client.post('/logout', headers=headers)
     response_body = response.json
     revoked_tokens = get_revoked_access_tokens(user.id, sync_redis_pool)
     access_token_jwt = get_jwt()["jti"]
@@ -61,14 +59,10 @@ def test_failed_logout_token_revoked(
         expected_body: str
 ):
     access_token = generate_access_token_for_user[user_data['username']]
-    auth_api_client.post(
-        '/logout',
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    response = auth_api_client.post(
-        '/logout',
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    auth_api_client.post('/logout', headers=headers)
+    response = auth_api_client.post('/logout', headers=headers)
     assert response.status_code == expected_answer['status']
     assert response.json == expected_body
 
@@ -87,11 +81,9 @@ def test_failed_logout_token_expired(
     sleep_time = 0.0001
     access_token = create_access_token(identity=user_data, expires_delta=timedelta(seconds=sleep_time))
     time.sleep(sleep_time)
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.post(
-        '/logout',
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
+    response = auth_api_client.post('/logout', headers=headers)
 
     assert response.status_code == expected_answer['status']
     assert response.json == expected_body
