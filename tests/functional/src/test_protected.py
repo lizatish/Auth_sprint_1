@@ -5,7 +5,8 @@ from redis import Redis
 
 from tests.functional.settings import get_settings
 from tests.functional.testdata.protected import test_data_protected_access, \
-    test_data_test_protected_admin_access_only_success, test_data_test_protected_admin_access_only_success_failed
+    test_data_protected_admin_access_only_failed, \
+    test_data_protected_admin_access_only_successed
 
 conf = get_settings()
 pytestmark = pytest.mark.asyncio
@@ -34,21 +35,21 @@ def test_protected_access(
 
 
 @pytest.mark.parametrize(
-    'request_body, expected_answer, expected_body', test_data_test_protected_admin_access_only_success
+    'user_data,  expected_answer, expected_body', test_data_protected_admin_access_only_failed
 )
-def test_protected_admin_access_only_success(
+def test_protected_admin_access_only_get_user_data_failed(
         auth_api_client: FlaskClient,
         sqlalchemy_postgres: SQLAlchemy,
         generate_access_token_for_user: dict,
         sync_redis_pool: Redis,
-        request_body: dict,
+        user_data: dict,
         expected_answer: dict,
         expected_body: dict
 ):
-    access_token = generate_access_token_for_user[request_body['username']]
+    access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.get('/protected', headers=headers)
+    response = auth_api_client.get(f'/role-manager/1234', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -56,21 +57,65 @@ def test_protected_admin_access_only_success(
 
 
 @pytest.mark.parametrize(
-    'request_body, expected_answer, expected_body', test_data_test_protected_admin_access_only_success_failed
+    'user_data,  expected_answer, expected_body', test_data_protected_admin_access_only_successed
 )
-def test_protected_admin_access_only_failed(
+def test_protected_admin_access_only_get_user_data_successed(
         auth_api_client: FlaskClient,
         sqlalchemy_postgres: SQLAlchemy,
         generate_access_token_for_user: dict,
         sync_redis_pool: Redis,
-        request_body: dict,
+        user_data: dict,
         expected_answer: dict,
         expected_body: dict
 ):
-    access_token = generate_access_token_for_user[request_body['username']]
+    access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.get('/protected', headers=headers)
+    response = auth_api_client.get(f'/role-manager/1234', headers=headers)
+    response_body = response.json
+
+    assert response.status_code == expected_answer['status']
+    assert response_body == expected_body
+
+
+@pytest.mark.parametrize(
+    'user_data,  expected_answer, expected_body', test_data_protected_admin_access_only_failed
+)
+def test_protected_admin_access_only_delete_user_data_failed(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    access_token = generate_access_token_for_user[user_data['username']]
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role-manager/1234', headers=headers)
+    response_body = response.json
+
+    assert response.status_code == expected_answer['status']
+    assert response_body == expected_body
+
+
+@pytest.mark.parametrize(
+    'user_data,  expected_answer, expected_body', test_data_protected_admin_access_only_successed
+)
+def test_protected_admin_access_only_delete_user_data_successed(
+        auth_api_client: FlaskClient,
+        sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
+        sync_redis_pool: Redis,
+        user_data: dict,
+        expected_answer: dict,
+        expected_body: dict
+):
+    access_token = generate_access_token_for_user[user_data['username']]
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role-manager/1234', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
