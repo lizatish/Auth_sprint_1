@@ -7,6 +7,7 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     """Базовый класс конфигурации."""
+    AUTH_PORT: int = 5555
 
     # Базовые настройки приложения
     SECRET_KEY: str
@@ -74,4 +75,4 @@ class DevSettings(Settings):
 @lru_cache()
 def get_settings() -> Settings:
     """Возвращает настройки тестов."""
-    return DevSettings()
+    return ProdSettings()
