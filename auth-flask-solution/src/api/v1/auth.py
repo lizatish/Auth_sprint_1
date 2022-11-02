@@ -129,3 +129,11 @@ def account_history():
     account_history_data = get_auth_service().get_account_history(user)
 
     return JsonService.prepare_output(AccountHistory, account_history_data)
+
+
+@auth_v1.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    """Проверяет и возвращает роль пользователя"""
+    identity = get_jwt_identity()
+    return JsonService.return_success_response(msg=identity['role'])

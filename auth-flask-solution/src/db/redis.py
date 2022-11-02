@@ -1,8 +1,6 @@
-from typing import Optional
-
 from db.cache import CacheStorage
 
-cache: Optional[CacheStorage] = None
+cache: CacheStorage | None = None
 
 
 def get_redis_storage() -> CacheStorage:

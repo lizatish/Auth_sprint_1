@@ -67,3 +67,8 @@ class JsonService:
         headers = request.headers
         bearer = headers.get('Authorization')
         return bearer.split()[1]
+
+    @staticmethod
+    def return_admins_only():
+        """Возвращает ответ, если доступ производится не из-под требуемого админского аккаунта."""
+        return {"msg": "Admins only!"}, HTTPStatus.FORBIDDEN
