@@ -13,6 +13,8 @@ class TestSettings(BaseSettings):
     SECRET_KEY: str = 'secret-key'
     FLASK_ENV: str = 'test_production'
 
+    DEFAULT_ROLE_NAME: str = 'standard'
+
     # Настройки логирования
     LOG_LEVEL: int = logging.DEBUG
 

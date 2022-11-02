@@ -88,7 +88,7 @@ def generate_access_token_for_user(app):
     yield result
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sqlalchemy_postgres(app: Flask) -> SQLAlchemy:
     """Фикстура алхимии для бд postgres c заполненными данными о персонах."""
     from models.db_models import User, Role

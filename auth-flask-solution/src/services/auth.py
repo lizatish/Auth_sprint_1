@@ -94,6 +94,11 @@ class AuthService:
         """Получить пользователя по его username."""
         return User.query.filter_by(username=username).first()
 
+    @staticmethod
+    def get_user_by_id(user_id: str):
+        """Получить пользователя по его id."""
+        return User.query.get(user_id)
+
 
 @lru_cache()
 def get_auth_service() -> AuthService:
