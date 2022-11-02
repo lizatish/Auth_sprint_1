@@ -16,8 +16,10 @@ def create_app(config_filename: object) -> Flask:
     create_jwt(app)
 
     # Регистрация отдельных компонентов (API)
-    from api.v1.routes import api_v1
+    from api.v1.auth import auth_v1
+    from api.v1.roles import roles_v1
 
-    app.register_blueprint(api_v1)
+    app.register_blueprint(auth_v1)
+    app.register_blueprint(roles_v1)
 
     return app

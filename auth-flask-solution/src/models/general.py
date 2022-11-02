@@ -1,9 +1,10 @@
 import enum
 
 
-class RoleType(enum.Enum):
+class RoleType(str, enum.Enum):
     """Тип роли пользователя."""
 
     STANDARD = 'standard'
     PRIVILEGED = 'privileged'
     ADMIN = 'admin'
+    TEST = 'test'

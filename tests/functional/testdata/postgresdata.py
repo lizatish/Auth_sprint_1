@@ -3,6 +3,7 @@ from datetime import timedelta
 from models.general import RoleType
 from tests.functional.utils.hash import hash_password
 
+
 users_data = [
 
     {
@@ -40,12 +41,15 @@ redis_users_expires_data = [
 roles_data = [
 
     {
+        'id': '815aa676-902d-4505-bbb5-42ca9727617f',
         'label': RoleType.STANDARD
     },
     {
+        'id': '13f82a7f-49ca-4e29-8731-8fed5e37695f',
         'label': RoleType.PRIVILEGED
     },
     {
+        'id': 'c07d6c8c-1d4f-4f54-b88f-2c2b962ad7b6',
         'label': RoleType.ADMIN
     }
 ]

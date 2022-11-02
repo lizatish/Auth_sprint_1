@@ -9,11 +9,11 @@ from core.jwt import get_jwt_instance
 from services.auth import AuthService, get_auth_service
 from services.json import JsonService
 
-api_v1 = Blueprint('api_v1', __name__)
+auth_v1 = Blueprint('auth_v1', __name__)
 jwt = get_jwt_instance()
 
 
-@api_v1.route("/login", methods=["POST"])
+@auth_v1.route("/login", methods=["POST"])
 @validate()
 def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
     """Позволяет пользователю войти в систему."""
@@ -30,7 +30,7 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
 
-@api_v1.route("/refresh", methods=["POST"])
+@auth_v1.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh() -> RefreshAccessTokensResponse:
     """Обновляет refresh, access токены по валидному refresh-токену."""
@@ -49,7 +49,7 @@ def refresh() -> RefreshAccessTokensResponse:
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
 
-@api_v1.route("/registration", methods=["POST"])
+@auth_v1.route("/registration", methods=["POST"])
 @validate()
 def registration(body: UserRegistration):
     user = AuthService.get_user_by_username(body.username)
@@ -59,7 +59,7 @@ def registration(body: UserRegistration):
     return JsonService.return_success_response(msg='Successful registration')
 
 
-@api_v1.route("/password-change", methods=["POST"])
+@auth_v1.route("/password-change", methods=["POST"])
 @validate()
 @jwt_required()
 def password_change(body: PasswordChange):
@@ -73,7 +73,7 @@ def password_change(body: PasswordChange):
     return JsonService.return_success_response(msg='Successful password change')
 
 
-@api_v1.route("/user", methods=["PUT"])
+@auth_v1.route("/user", methods=["PUT"])
 @validate()
 @jwt_required()
 def change_user_data(body: UserData):

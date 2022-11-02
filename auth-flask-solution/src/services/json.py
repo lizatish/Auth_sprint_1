@@ -15,6 +15,11 @@ class JsonService:
         return {"msg": "Role not found"}, HTTPStatus.NOT_FOUND
 
     @staticmethod
+    def return_uuid_fail():
+        """Возвращает ответ пользователю, если id неверный."""
+        return {"msg": "Bad format uuid"}, HTTPStatus.UNPROCESSABLE_ENTITY
+
+    @staticmethod
     def return_password_verification_failed():
         """Возвращает ответ пользователю, если введенный пароль не верен."""
         return {"msg": "Invalid password"}, HTTPStatus.UNAUTHORIZED
@@ -42,13 +47,23 @@ class JsonService:
         return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
 
     @staticmethod
-    def get_authorization_header_token(request: Request):
-        """Возвращает токен из заголовка запроса."""
-        headers = request.headers
-        bearer = headers.get('Authorization')
-        return bearer.split()[1]
+    def return_role_exists(**kwargs):
+        """Возвращает ответ пользователю,сообщающий о выполнении успешной операции."""
+        return {"msg": "Role exists!"}, HTTPStatus.CONFLICT
 
     @staticmethod
     def prepare_output(model, items):
         """Возвращает данные в json формате приведенные к нужной модели."""
         return [orjson.loads(model(**item.__dict__).json()) for item in items]
+
+    @staticmethod
+    def prepare_single_output(model, item):
+        """Возвращает данные в json формате приведенные к нужной модели."""
+        return orjson.loads(model(**item.__dict__).json())
+
+    @staticmethod
+    def get_authorization_header_token(request: Request):
+        """Возвращает токен из заголовка запроса."""
+        headers = request.headers
+        bearer = headers.get('Authorization')
+        return bearer.split()[1]
