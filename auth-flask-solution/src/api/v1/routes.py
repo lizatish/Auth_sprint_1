@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_pydantic import validate
 
 from api.v1.schemas import RefreshAccessTokensResponse, UserData, PasswordChange, UserRegistration
-from api.v1.schemas import UserLoginScheme
+from api.v1.schemas import UserLoginScheme, AccountHistory
 from core.jwt import get_jwt_instance
 from services.auth import AuthService, get_auth_service
 from services.json import JsonService
@@ -25,6 +25,7 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
         return JsonService.return_password_verification_failed()
 
     access_token, refresh_token = get_auth_service().create_tokens(user)
+    get_auth_service().add_to_history(user)
 
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
@@ -113,3 +114,18 @@ def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
 
     compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, jti_access_token)
     return not compare_access_tokens
+
+
+@api_v1.route("/account-history", methods=["GET"])
+@jwt_required()
+def account_history():
+    """Выводит историю входов аккаунта."""
+    identity = get_jwt_identity()
+
+    user = AuthService.get_user_by_username(identity['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    account_history_data = get_auth_service().get_account_history(user)
+
+    return JsonService.prepare_output(AccountHistory, account_history_data)
