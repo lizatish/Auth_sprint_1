@@ -25,7 +25,7 @@ class JsonService:
         return jsonify(**kwargs)
 
     @staticmethod
-    def return_invalid_refresh_token(): 
+    def return_invalid_refresh_token():
         """Возвращает невалидный refresh-токен."""
         return {"msg": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
 
