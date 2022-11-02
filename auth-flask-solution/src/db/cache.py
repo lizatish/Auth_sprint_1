@@ -79,3 +79,13 @@ class CacheStorage(ABC):
     def close(self):
         """Закрывает соединение."""
         pass
+
+    @abstractmethod
+    def delete(self, key: str):
+        """Удаляет данные по ключу."""
+        pass
+
+    @abstractmethod
+    def keys(self, condition: str) -> list[str]:
+        """Возвращает все ключи, удовлетворяюще условию."""
+        pass

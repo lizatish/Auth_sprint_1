@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from flask import jsonify
+from flask import jsonify, Request
 
 
 class JsonService:
@@ -28,3 +28,15 @@ class JsonService:
     def return_user_exists():
         """Возвращает ответ пользователю, если такой логин уже используется."""
         return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
+
+    @staticmethod
+    def return_invalid_refresh_token() -> (str, int):
+        """Возвращает невалидный refresh-токен."""
+        return {"msg": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
+
+    @staticmethod
+    def get_authorization_header_token(request: Request):
+        """Возвращает токен из заголовка запроса."""
+        headers = request.headers
+        bearer = headers.get('Authorization')
+        return bearer.split()[1]

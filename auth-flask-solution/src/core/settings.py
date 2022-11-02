@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     DEFAULT_ROLE_NAME: str = 'standard'
 
     # Настройки Redis
-    CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).seconds
-    CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).seconds
+    CACHE_REVOKED_ACCESS_TOKEN_EXPIRED_SEC: int = timedelta(hours=1).total_seconds()
+    CACHE_REFRESH_TOKEN_EXPIRED_SEC: int = timedelta(days=30).total_seconds()
     CACHE_HOST: str
     CACHE_PORT: int = 6379
 

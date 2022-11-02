@@ -1,5 +1,7 @@
-from tests.functional.utils.hash import hash_password
+from datetime import timedelta
+
 from models.general import RoleType
+from tests.functional.utils.hash import hash_password
 
 users_data = [
 
@@ -16,17 +18,23 @@ users_data = [
         'role': RoleType.STANDARD.name
     },
     {
-        'id': 'bb81ead9-b728-461b-a0a9-eacc9b7127a2',
-        'username': 'oleg',
-        'password': hash_password('Ldfj78!ksjd'),
-        'role': RoleType.PRIVILEGED.name
-    },
-    {
         'id': 'e2da75c0-8f07-4d20-bfc4-8afcf58e7a2c',
         'username': 'admin',
         'password': hash_password('adminADMINOV1!'),
         'role': RoleType.ADMIN.name
     },
+    {
+        'id': 'bb81ead9-b728-461b-a0a9-eacc9b7127a2',
+        'username': 'oleg',
+        'password': hash_password('Ldfj78!ksjd'),
+        'role': RoleType.PRIVILEGED.name
+    },
+]
+
+redis_users_expires_data = [
+    timedelta(days=30),
+    timedelta(seconds=1),
+    timedelta(days=30),
 ]
 
 roles_data = [
@@ -40,4 +48,11 @@ roles_data = [
     {
         'label': RoleType.ADMIN
     }
+]
+
+users_data_for_tokens = [
+    {"username": 'ivan', "role": RoleType.STANDARD.name},
+    {"username": 'liza', "role": RoleType.STANDARD.name},
+    {"username": 'oleg', "role": RoleType.PRIVILEGED.name},
+    {"username": 'admin', "role": RoleType.ADMIN.name}
 ]

@@ -24,7 +24,7 @@ class AuthService:
 
     def create_tokens(self, user: User):
         """Создать access и refresh токены для пользователя."""
-        token_user_data = {"username": user.username, "role": user.role.label}
+        token_user_data = {"username": user.username, "role": user.role.label.name}
         access_token = create_access_token(identity=token_user_data)
         refresh_token = create_refresh_token(identity=token_user_data)
 
@@ -35,6 +35,13 @@ class AuthService:
     def update_revoked_access_token(self, user_id: str, revoked_access_token: str):
         """Обновить access-токен."""
         self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
+
+    def check_refresh_token(self, user_id: str, refresh_token: str) -> bool:
+        """Сравнивает refresh-токен с тем, что лежит в redis."""
+        current_refresh_token = self.cache_service.get_refresh_token(user_id)
+        if current_refresh_token.decode('ascii') == refresh_token:
+            return True
+        return False
 
     def create_user(self, username: str, password: str):
         """Создать пользователя."""
@@ -57,6 +64,19 @@ class AuthService:
             else:
                 return False
         self.db_connection.session.commit()
+        return True
+
+    def logout_user(self, user_id: str, revoked_access_token: str):
+        """Разлогинивает пользователя."""
+        self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
+        self.cache_service.delete_refresh_token(user_id)
+
+    def check_access_token_is_revoked(self, user_id: str, access_token: str) -> bool:
+        """Проверяет валидный access-токен на то, что он не лежит в базе отозванных токенов."""
+        revokes_access_tokens_bin = self.cache_service.get_revoked_access_token(user_id)
+        revokes_access_tokens = [token.decode('ascii') for token in revokes_access_tokens_bin]
+        if access_token in revokes_access_tokens:
+            return False
         return True
 
     @staticmethod
