@@ -28,20 +28,18 @@ def test_success_update_user_refresh_token(
 ):
     from models.db_models import User
     user = User.query.filter_by(username=user_data['username']).first()
-
     old_refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
-    response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {old_refresh_token}"},
-    )
+    headers = {'Authorization': f'Bearer {old_refresh_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.post('/refresh', headers=headers)
     response_body = response.json
+    refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
 
     assert response.status_code == expected_answer['status']
-    assert len(response_body) == 2
     assert response_body['access_token']
     assert response_body['refresh_token']
     assert response_body['refresh_token'] != old_refresh_token
-    assert sync_redis_pool.get(f"refresh_{user.id}").decode('ascii') == response_body['refresh_token']
+    assert refresh_token == response_body['refresh_token']
 
 
 @pytest.mark.parametrize(
@@ -58,15 +56,10 @@ def test_unsuccess_usage_old_refresh_token(
     from models.db_models import User
     user = User.query.filter_by(username=user_data['username']).first()
     old_refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
+    headers = {'Authorization': f'Bearer {old_refresh_token}', 'content-type': 'application/json'}
 
-    good_response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {old_refresh_token}"},
-    )
-    bad_response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {old_refresh_token}"},
-    )
+    good_response = auth_api_client.post('/refresh', headers=headers)
+    bad_response = auth_api_client.post('/refresh', headers=headers)
 
     assert bad_response.json == expected_body
     assert bad_response.status_code == expected_answer['status']
@@ -85,11 +78,9 @@ def test_unsuccess_update_user_refresh_token_not_exists(
         expected_body: dict
 ):
     refresh_token = create_refresh_token(identity=user_data, expires_delta=timedelta(days=30))
+    headers = {'Authorization': f'Bearer {refresh_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {refresh_token}"},
-    )
+    response = auth_api_client.post('/refresh', headers=headers)
     assert response.json == expected_body
     assert response.status_code == expected_answer['status']
 
@@ -107,11 +98,9 @@ def test_unsuccess_update_user_refresh_token_another_role(
 ):
     from models.db_models import User
     refresh_token = create_refresh_token(identity=user_data, expires_delta=timedelta(days=30))
+    headers = {'Authorization': f'Bearer {refresh_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {refresh_token}"},
-    )
+    response = auth_api_client.post('/refresh', headers=headers)
     user = User.query.filter_by(username=user_data['username']).first()
 
     assert response.json == expected_body
@@ -130,10 +119,8 @@ def test_unsuccess_update_user_refresh_token_validation_error(
         expected_answer: dict,
         expected_body: dict
 ):
-    response = auth_api_client.post(
-        '/refresh',
-        headers={"Authorization": f"Bearer {refresh_token}"},
-    )
+    headers = {'Authorization': f'Bearer {refresh_token}', 'content-type': 'application/json'}
+    response = auth_api_client.post('/refresh', headers=headers)
 
     assert response.json == expected_body
     assert response.status_code == expected_answer['status']

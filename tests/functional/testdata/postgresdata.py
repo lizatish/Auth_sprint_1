@@ -8,13 +8,13 @@ users_data = [
     {
         'id': '16bdbb16-d3bf-4184-b08e-e2b2eabeee7f',
         'username': 'ivan',
-        'password': hash_password('ivanivanov'),
+        'password': hash_password('ivanivanov12IN!'),
         'role': RoleType.STANDARD.name
     },
     {
         'id': '15e794ed-2286-4690-b092-793f5e51f0ec',
         'username': 'liza',
-        'password': hash_password('ivanivanov'),
+        'password': hash_password('lizaLi123!'),
         'role': RoleType.STANDARD.name
     },
     {
@@ -51,8 +51,8 @@ roles_data = [
 ]
 
 users_data_for_tokens = [
-    {"username": 'ivan', "role": RoleType.STANDARD.name},
-    {"username": 'liza', "role": RoleType.STANDARD.name},
-    {"username": 'oleg', "role": RoleType.PRIVILEGED.name},
-    {"username": 'admin', "role": RoleType.ADMIN.name}
+    {'username': 'ivan', 'role': RoleType.STANDARD.name},
+    {'username': 'liza', 'role': RoleType.STANDARD.name},
+    {'username': 'oleg', 'role': RoleType.PRIVILEGED.name},
+    {'username': 'admin', 'role': RoleType.ADMIN.name}
 ]

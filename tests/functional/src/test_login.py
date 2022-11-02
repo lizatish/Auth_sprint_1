@@ -29,22 +29,21 @@ def test_success_login_user(
 
     assert user.username == request_body['username']
     assert response.status_code == expected_answer['status']
-    assert len(response_body) == 2
     assert response_body['access_token']
     assert response_body['refresh_token']
     assert sync_redis_pool.get(f"refresh_{user.id}").decode('ascii') == response_body['refresh_token']
 
 
 @pytest.mark.parametrize(
-    'request_body, expected_answer', test_data_for_not_exists_login_user
+    'request_body, expected_answer, expected_body', test_data_for_not_exists_login_user
 )
 def test_not_exists_login_user(
         auth_api_client: FlaskClient,
         sqlalchemy_postgres: SQLAlchemy,
         sync_redis_pool: Redis,
-        redis_flushall,
         request_body: dict,
         expected_answer: dict,
+        expected_body: str
 ):
     from models.db_models import User
 
@@ -54,22 +53,22 @@ def test_not_exists_login_user(
 
     assert not user
     assert response.status_code == expected_answer['status']
-    assert not response_body
+    assert response_body == expected_body
 
 
 @pytest.mark.parametrize(
-    'request_body, expected_answer', test_data_for_not_correct_password_login_user
+    'request_body, expected_answer, expected_body', test_data_for_not_correct_password_login_user
 )
 def test_not_correct_password_login_user(
         auth_api_client: FlaskClient,
         sqlalchemy_postgres: SQLAlchemy,
         sync_redis_pool: Redis,
-        redis_flushall,
         request_body: dict,
         expected_answer: dict,
+        expected_body: str,
 ):
     response = auth_api_client.post('/login', json=request_body)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
-    assert not response_body
+    assert response_body == expected_body

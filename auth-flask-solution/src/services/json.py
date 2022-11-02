@@ -25,14 +25,21 @@ class JsonService:
         return jsonify(**kwargs)
 
     @staticmethod
-    def return_user_exists():
-        """Возвращает ответ пользователю, если такой логин уже используется."""
-        return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
-
-    @staticmethod
     def return_invalid_refresh_token() -> (str, int):
         """Возвращает невалидный refresh-токен."""
         return {"msg": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
+
+    @staticmethod
+    def get_refresh_token(request: Request):
+        """Возвращает refresh-token из заголовка запроса."""
+        headers = request.headers
+        bearer = headers.get('Authorization')
+        return bearer.split()[1]
+
+    @staticmethod
+    def return_user_exists():
+        """Возвращает ответ пользователю, если такой логин уже используется."""
+        return {"msg": "User with this username already exists!"}, HTTPStatus.CONFLICT
 
     @staticmethod
     def get_authorization_header_token(request: Request):

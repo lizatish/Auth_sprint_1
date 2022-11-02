@@ -1,5 +1,6 @@
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import get_jwt
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_pydantic import validate
 
 from api.v1.schemas import RefreshAccessTokensResponse, UserData, PasswordChange, UserRegistration
