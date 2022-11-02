@@ -2,7 +2,6 @@ import pytest
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
 
-from tests.functional.settings import get_settings
 from tests.functional.testdata.roles import (test_data_for_create_role_successful,
                                              test_data_for_create_role_fail,
                                              test_data_for_get_scope_roles,
@@ -17,11 +16,13 @@ from tests.functional.testdata.roles import (test_data_for_create_role_successfu
 
 pytestmark = pytest.mark.asyncio
 
+
 @pytest.mark.parametrize(
     'request_body, expected_body, expected_answer', test_data_for_create_role_successful
 )
 async def test_create_role_successful(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):
     """
@@ -32,8 +33,10 @@ async def test_create_role_successful(
     - успешный ответ от сервиса
     """
     from models.db_models import Role
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.post('/role', json=request_body)
+    response = auth_api_client.post('/role', json=request_body, headers=headers)
     response_body = response.json
     role = Role.query.filter_by(label=request_body['label']).first()
 
@@ -47,6 +50,7 @@ async def test_create_role_successful(
 )
 async def test_create_role_fail(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         request_body: dict, expected_body: dict, expected_answer: dict
 ):
     """
@@ -55,7 +59,10 @@ async def test_create_role_fail(
     Проверяет:
     - отрицательный ответ от серивиса
     """
-    response = auth_api_client.post('/role', json=request_body)
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.post('/role', json=request_body, headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -67,6 +74,7 @@ async def test_create_role_fail(
 )
 async def test_get_scope_roles(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_names: list, expected_answer: dict
 ):
     """
@@ -76,7 +84,10 @@ async def test_get_scope_roles(
     - успещный ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.get('/role')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.get('/role', headers=headers)
     response_body = response.json
     roles_names = [item['label'] for item in response_body]
 
@@ -90,6 +101,7 @@ async def test_get_scope_roles(
 )
 async def test_get_single_role(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, role_id: str
 ):
     """
@@ -99,7 +111,10 @@ async def test_get_single_role(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.get(f'/role/{role_id}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.get(f'/role/{role_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -111,6 +126,7 @@ async def test_get_single_role(
 )
 async def test_get_single_role_fail(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, role_id: str
 ):
     """
@@ -120,7 +136,10 @@ async def test_get_single_role_fail(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.get(f'/role/{role_id}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.get(f'/role/{role_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -132,6 +151,7 @@ async def test_get_single_role_fail(
 )
 async def test_delete_role_fail(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, role_id: str
 ):
     """
@@ -141,7 +161,10 @@ async def test_delete_role_fail(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.delete(f'/role/{role_id}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role/{role_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -153,6 +176,7 @@ async def test_delete_role_fail(
 )
 async def test_delete_role(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, role_id: str
 ):
     """
@@ -162,7 +186,10 @@ async def test_delete_role(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.delete(f'/role/{role_id}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role/{role_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -174,6 +201,7 @@ async def test_delete_role(
 )
 async def test_role_appoint_successful(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, user_id: str, role: str
 ):
     """
@@ -186,8 +214,10 @@ async def test_role_appoint_successful(
     from models.db_models import User
     user_before = User.query.get(user_id)
     role_before = user_before.role
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.get(f'/role-manager/{user_id}?label={role}')
+    response = auth_api_client.get(f'/role-manager/{user_id}?label={role}', headers=headers)
     response_body = response.json
     user_after = User.query.get(user_id)
     role_after = user_after.role
@@ -203,6 +233,7 @@ async def test_role_appoint_successful(
 )
 async def test_role_appoint_fail(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, user_id: str, role: str
 ):
     """
@@ -212,7 +243,10 @@ async def test_role_appoint_fail(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.get(f'/role-manager/{user_id}?label={role}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.get(f'/role-manager/{user_id}?label={role}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -224,6 +258,7 @@ async def test_role_appoint_fail(
 )
 async def test_role_take_away_successful(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, user_id: str
 ):
     """
@@ -233,7 +268,11 @@ async def test_role_take_away_successful(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.delete(f'/role-manager/{user_id}')
+
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role-manager/{user_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -245,6 +284,7 @@ async def test_role_take_away_successful(
 )
 async def test_role_take_away_fail(
         auth_api_client: FlaskClient, sqlalchemy_postgres: SQLAlchemy,
+        generate_access_token_for_user: dict,
         expected_body: list, expected_answer: dict, user_id: str
 ):
     """
@@ -254,7 +294,10 @@ async def test_role_take_away_fail(
     - ответ от серивиса
     - соответствие данных
     """
-    response = auth_api_client.delete(f'/role-manager/{user_id}')
+    access_token = generate_access_token_for_user['admin']
+    headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
+
+    response = auth_api_client.delete(f'/role-manager/{user_id}', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']

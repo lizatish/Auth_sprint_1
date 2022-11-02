@@ -49,7 +49,8 @@ def test_protected_admin_access_only_get_user_data_failed(
     access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.get(f'/role-manager/1234', headers=headers)
+    response = auth_api_client.get('/role-manager/2ef53946-d281-4a8f-92c4-09a63321daf2?label=privileged',
+                                   headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -71,7 +72,10 @@ def test_protected_admin_access_only_get_user_data_successed(
     access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.get(f'/role-manager/1234', headers=headers)
+    response = auth_api_client.get(
+        '/role-manager/2ef53946-d281-4-09a63321daf2?label=privileged',
+        headers=headers,
+    )
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -93,7 +97,7 @@ def test_protected_admin_access_only_delete_user_data_failed(
     access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.delete(f'/role-manager/1234', headers=headers)
+    response = auth_api_client.delete(f'/role-manager/2ef51-4a8f-92c4-09a63321daf2', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']
@@ -115,7 +119,7 @@ def test_protected_admin_access_only_delete_user_data_successed(
     access_token = generate_access_token_for_user[user_data['username']]
     headers = {'Authorization': f'Bearer {access_token}', 'content-type': 'application/json'}
 
-    response = auth_api_client.delete(f'/role-manager/1234', headers=headers)
+    response = auth_api_client.delete(f'/role-manager/2ef09a63321daf2', headers=headers)
     response_body = response.json
 
     assert response.status_code == expected_answer['status']

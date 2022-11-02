@@ -1,18 +1,21 @@
 from flask import Blueprint
+from flask_jwt_extended import jwt_required
 from flask_pydantic import validate
 
 from api.v1.schemas import Role, RoleRepresentation
+from decorators import admin_required
 from services.auth import AuthService
-from services.roles import RolesService, get_roles_service
 from services.json import JsonService
+from services.roles import RolesService, get_roles_service
 from services.utils import is_valid_uuid
-
 
 roles_v1 = Blueprint('roles_v1', __name__)
 
 
 @roles_v1.route("/role", methods=["POST"])
 @validate()
+@jwt_required()
+@admin_required
 def roles_create(body: Role):
     role = RolesService.get_role_by_label(body.label)
     if role:
@@ -21,12 +24,16 @@ def roles_create(body: Role):
     return JsonService.return_success_response(msg="Role created!")
 
 
+@jwt_required()
+@admin_required
 @roles_v1.route("/role", methods=["GET"])
 def roles_scope():
     roles = RolesService.get_roles()
     return JsonService.prepare_output(RoleRepresentation, roles)
 
 
+@jwt_required()
+@admin_required
 @roles_v1.route("/role/<role_id>", methods=["GET"])
 def role_retriew(role_id):
     if not is_valid_uuid(role_id):
@@ -37,6 +44,8 @@ def role_retriew(role_id):
     return JsonService.prepare_single_output(RoleRepresentation, role)
 
 
+@jwt_required()
+@admin_required
 @roles_v1.route("/role/<role_id>", methods=["DELETE"])
 def role_delete(role_id):
     if not is_valid_uuid(role_id):
@@ -49,6 +58,8 @@ def role_delete(role_id):
 
 @roles_v1.route("/role-manager/<user_id>", methods=["GET"])
 @validate()
+@jwt_required()
+@admin_required
 def role_appoint(user_id, query: Role):
     if not is_valid_uuid(user_id):
         return JsonService.return_uuid_fail()
@@ -63,6 +74,8 @@ def role_appoint(user_id, query: Role):
 
 
 @roles_v1.route("/role-manager/<user_id>", methods=["DELETE"])
+@jwt_required()
+@admin_required
 def role_take_away(user_id):
     if not is_valid_uuid(user_id):
         return JsonService.return_uuid_fail()
