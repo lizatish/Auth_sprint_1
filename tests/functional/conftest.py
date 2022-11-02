@@ -49,7 +49,6 @@ def app() -> Flask:
     yield app
 
 
-# todo временная фикстура, удалить после перехода на асинхронность
 @pytest.fixture(scope="session")
 def sync_redis_pool(app) -> Redis:
     """Временная фикстура синхронного redis."""

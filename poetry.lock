@@ -531,6 +531,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "orjson"
+version = "3.8.1"
+description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "packaging"
 version = "21.3"
 description = "Core utilities for Python packages"
@@ -891,7 +899,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "3d3f5b9d4a0f6b33f872ee6c9243388f73baa0ab00f85ea4c52d1f74d3822ebc"
+content-hash = "4a1469b343b2085bf5fcbf604ca3489d479b88ec3687f690bee30b933f68d4cd"
 
 [metadata.files]
 aioredis = []
@@ -1086,6 +1094,7 @@ markupsafe = [
 marshmallow = []
 mccabe = []
 mistune = []
+orjson = []
 packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
