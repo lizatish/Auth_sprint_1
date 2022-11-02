@@ -1,9 +1,9 @@
+import datetime
 import re
 from uuid import UUID
-import datetime
 
 from pydantic import BaseModel, validator
-from typing import Optional
+
 from models.general import RoleType
 
 
@@ -47,8 +47,12 @@ class PasswordChange(BaseModel):
 
 class UserData(BaseModel):
     """Схема изменения данных пользователя."""
+    username: str | None
 
-    username: Optional[str]
+
+class UserRole(BaseModel):
+    """Схема проверки прав пользователя."""
+    role: str
 
 
 class Role(BaseModel):

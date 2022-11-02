@@ -103,6 +103,14 @@ def logout():
     return JsonService.return_success_response(msg="User has been logged out")
 
 
+@api_v1.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    """Проверяет и возвращает роль пользователя"""
+    identity = get_jwt_identity()
+    return JsonService.return_success_response(msg=identity['role'])
+
+
 @jwt.token_in_blocklist_loader
 def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
     """Проверка access-токена, что он не лежит уже в revoked-токенах."""
