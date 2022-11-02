@@ -26,7 +26,9 @@ def test_success_login_user(
     response = auth_api_client.post('/login', json=request_body)
     response_body = response.json
     user = User.query.filter_by(username=request_body['username']).first()
+    account_history = user.stories
 
+    assert account_history
     assert user.username == request_body['username']
     assert response.status_code == expected_answer['status']
     assert response_body['access_token']

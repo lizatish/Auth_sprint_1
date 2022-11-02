@@ -4,7 +4,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token
 
 from db.cache import CacheStorage
 from db.redis import get_redis_storage
-from models.db_models import User, Role, db
+from models.db_models import User, Role, db, AccountHistory
 from models.general import RoleType
 from services.cache import CacheService
 from services.utils import get_or_create
@@ -21,6 +21,16 @@ class AuthService:
     def update_refresh_token(self, user_id: str, refresh_token: str):
         """Обновить refresh-токен."""
         self.cache_service.set_refresh_token(user_id, refresh_token)
+
+    def add_to_history(self, user):
+        """Добавить историю входа."""
+        history = AccountHistory(user=user)
+        self.db_connection.session.add(history)
+        self.db_connection.session.commit()
+
+    def get_account_history(self, user):
+        """Получить историю входов."""
+        return user.stories
 
     def create_tokens(self, user: User):
         """Создать access и refresh токены для пользователя."""

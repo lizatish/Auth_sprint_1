@@ -1,5 +1,5 @@
 from http import HTTPStatus
-
+import orjson
 from flask import jsonify, Request
 
 
@@ -25,7 +25,7 @@ class JsonService:
         return jsonify(**kwargs)
 
     @staticmethod
-    def return_invalid_refresh_token() -> (str, int):
+    def return_invalid_refresh_token(): 
         """Возвращает невалидный refresh-токен."""
         return {"msg": "Invalid refresh token"}, HTTPStatus.UNAUTHORIZED
 
@@ -47,3 +47,8 @@ class JsonService:
         headers = request.headers
         bearer = headers.get('Authorization')
         return bearer.split()[1]
+
+    @staticmethod
+    def prepare_output(model, items):
+        """Возвращает данные в json формате приведенные к нужной модели."""
+        return [orjson.loads(model(**item.__dict__).json()) for item in items]

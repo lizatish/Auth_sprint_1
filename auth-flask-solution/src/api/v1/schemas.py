@@ -1,4 +1,6 @@
 import re
+from uuid import UUID
+import datetime
 
 from pydantic import BaseModel, validator
 from typing import Optional
@@ -45,3 +47,10 @@ class PasswordChange(BaseModel):
 class UserData(BaseModel):
     """Схема изменения данных пользователя."""
     username: Optional[str]
+
+
+class AccountHistory(BaseModel):
+    """Схема истории входов."""
+
+    id: UUID
+    created: datetime.datetime

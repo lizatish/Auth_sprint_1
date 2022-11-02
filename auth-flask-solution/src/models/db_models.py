@@ -1,5 +1,6 @@
 import re
 import uuid
+import datetime
 
 from flask import current_app
 from sqlalchemy import ForeignKey, Enum
@@ -36,12 +37,20 @@ class Role(UUIDMixin, db.Model):
     users = db.relationship('User', backref='role')
 
 
+class AccountHistory(UUIDMixin, db.Model):
+    """Модель истории входов."""
+
+    user_id = db.Column(UUID(as_uuid=True), ForeignKey("user.id"))
+    created = db.Column(db.DateTime, default=datetime.datetime.now())
+
+
 class User(UUIDMixin, db.Model):
     """Модель пользователя."""
 
     username = db.Column(db.String, unique=True, nullable=False)
     role_id = db.Column(UUID(as_uuid=True), ForeignKey("role.id"))
     password = db.Column(db.String(400), nullable=False)
+    stories = db.relationship('AccountHistory', backref='user')
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
