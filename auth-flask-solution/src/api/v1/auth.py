@@ -16,7 +16,56 @@ jwt = get_jwt_instance()
 @auth_v1.route("/login", methods=["POST"])
 @validate()
 def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
-    """Позволяет пользователю войти в систему."""
+    """
+    Аутентификация пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Логин и пароль пользователя
+        schema:
+          id: UserLoginScheme
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Имя пользователя
+            password:
+              type: string
+              description: Пароль пользователя
+    responses:
+      200:
+        description: Сгенерированные токены доступа
+        schema:
+           id: RefreshAccessTokensResponse
+           properties:
+            access_token:
+              type: string
+              description: Access-токен
+            refresh_token:
+              type: string
+              description: Refresh-токен
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+      403:
+        description: Неверный пароль
+        schema:
+           id: PasswordVerificationFailed
+           properties:
+              msg:
+                type: string
+                example: Invalid password
+    """
     user = AuthService.get_user_by_username(body.username)
     if not user:
         return JsonService.return_user_not_found()
@@ -33,7 +82,49 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
 @auth_v1.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh() -> RefreshAccessTokensResponse:
-    """Обновляет refresh, access токены по валидному refresh-токену."""
+    """
+    Обновление access и refresh токена пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Refresh-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Сгенерированные токены доступа
+        schema:
+           id: RefreshAccessTokensResponse
+           properties:
+            access_token:
+              type: string
+              description: Access-токен
+            refresh_token:
+              type: string
+              description: Refresh-токен
+      404:
+        description: Пользователя с таким именем не существует
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                description: Пользователь не найден
+                example: User not found
+      403:
+        description: Неверный пароль
+        schema:
+           id: RefreshTokenVerificationFailed
+           properties:
+              msg:
+                type: string
+                description: Неверный refresh-токен
+                example: Invalid refresh token
+    """
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
@@ -52,6 +143,53 @@ def refresh() -> RefreshAccessTokensResponse:
 @auth_v1.route("/registration", methods=["POST"])
 @validate()
 def registration(body: UserRegistration):
+    """
+    Регистрация пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Логин и пароль пользователя
+        schema:
+          id: UserLoginScheme
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Имя пользователя
+            password:
+              type: string
+              description: Пароль пользователя
+    responses:
+      200:
+        description: Регистрация прошла успешно
+        schema:
+           id: SuccessfulRegistration
+           properties:
+             msg:
+               type: string
+               example: Successful registration
+      400:
+        description: Ошибка валидации пароля
+        schema:
+           id: PasswordValidationFailed
+           properties:
+             msg:
+               type: string
+               example: The password must contain at least eight characters, at least one letter and one number.
+      409:
+        description: Пользователь с таким именем уже существует
+        schema:
+           id: UserAlreadyExists
+           properties:
+              msg:
+               type: string
+               example: User with this username already exists!
+    """
     user = AuthService.get_user_by_username(body.username)
     if user:
         return JsonService.return_user_exists()
@@ -59,10 +197,125 @@ def registration(body: UserRegistration):
     return JsonService.return_success_response(msg='Successful registration')
 
 
+@auth_v1.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    """
+    Разлогинить пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Refresh-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Пользователь разлогинен
+        schema:
+           id: UserLoggedOut
+           properties:
+              msg:
+                type: string
+                example: User has been logged out
+      404:
+        description: Пользователя с таким именем не существует
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                description: Пользователь не найден
+                example: User not found
+    """
+    identity = get_jwt_identity()
+
+    user = AuthService.get_user_by_username(identity['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    access_token = get_jwt()["jti"]
+    get_auth_service().logout_user(user.id, access_token)
+
+    return JsonService.return_success_response(msg="User has been logged out")
+
+
+# todo одновремено не позволяет вводить параметры хеадера и тела
 @auth_v1.route("/password-change", methods=["POST"])
 @validate()
 @jwt_required()
 def password_change(body: PasswordChange):
+    """
+    Изменение пароля пользователя
+    ---
+    tags:
+      - Data Change
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Refresh-токен пользователя
+        schema:
+            type: string
+      - in: body
+        name: body
+        required: true
+        description: Старый и новый пароли пользователя
+        schema:
+          id: PasswordChange
+          required:
+            - name
+          properties:
+            old_password:
+              type: string
+              description: Старый пароль пользователя
+            new_password:
+              type: string
+              description: Новый пароль пользователя
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Refresh-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Смена пароля прошла успешно
+        schema:
+           id: SuccessPasswordChange
+           properties:
+             msg:
+               type: string
+               example: Successful password change
+      400:
+       description: Ошибка валидации пароля
+       schema:
+          id: PasswordValidationFailed
+          properties:
+             msg:
+               type: string
+               example: The password must contain at least eight characters, at least one letter and one number.
+      403:
+        description: Неверный пароль
+        schema:
+           id: PasswordVerificationFailed
+           properties:
+              msg:
+                type: string
+                example: Invalid password
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+    """
     identity = get_jwt_identity()
     user = AuthService.get_user_by_username(identity["username"])
     if not user:
@@ -85,22 +338,6 @@ def change_user_data(body: UserData):
     if not created:
         return JsonService.return_user_exists()
     return JsonService.return_success_response(msg='Successful user data changed')
-
-
-@auth_v1.route("/logout", methods=["POST"])
-@jwt_required()
-def logout():
-    """Разлогинивает пользователя."""
-    identity = get_jwt_identity()
-
-    user = AuthService.get_user_by_username(identity['username'])
-    if not user:
-        return JsonService.return_user_not_found()
-
-    access_token = get_jwt()["jti"]
-    get_auth_service().logout_user(user.id, access_token)
-
-    return JsonService.return_success_response(msg="User has been logged out")
 
 
 @jwt.token_in_blocklist_loader

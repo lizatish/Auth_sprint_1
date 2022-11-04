@@ -1,3 +1,4 @@
+from flasgger import Swagger
 from flask import Flask
 
 from core.jwt import create_jwt
@@ -14,6 +15,7 @@ def create_app(config_filename: object) -> Flask:
     create_db(app)
 
     create_jwt(app)
+    Swagger(app)
 
     # Регистрация отдельных компонентов (API)
     from api.v1.auth import auth_v1
