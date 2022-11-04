@@ -13,10 +13,72 @@ auth_v1 = Blueprint('auth_v1', __name__)
 jwt = get_jwt_instance()
 
 
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
+    """Проверка access-токена, что он не лежит уже в revoked-токенах."""
+    jti_access_token = jwt_payload["jti"]
+
+    user = AuthService.get_user_by_username(jwt_payload['sub']['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, jti_access_token)
+    return not compare_access_tokens
+
+
 @auth_v1.route("/login", methods=["POST"])
 @validate()
 def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
-    """Позволяет пользователю войти в систему."""
+    """
+    Аутентификация пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Логин и пароль пользователя
+        schema:
+          id: UserLoginScheme
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Имя пользователя
+            password:
+              type: string
+              description: Пароль пользователя
+    responses:
+      200:
+        description: Сгенерированные токены доступа
+        schema:
+           id: RefreshAccessTokensResponse
+           properties:
+            access_token:
+              type: string
+              description: Access-токен
+            refresh_token:
+              type: string
+              description: Refresh-токен
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+      403:
+        description: Неверный пароль
+        schema:
+           id: PasswordVerificationFailed
+           properties:
+              msg:
+                type: string
+                example: Invalid password
+    """
     user = AuthService.get_user_by_username(body.username)
     if not user:
         return JsonService.return_user_not_found()
@@ -33,7 +95,49 @@ def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
 @auth_v1.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh() -> RefreshAccessTokensResponse:
-    """Обновляет refresh, access токены по валидному refresh-токену."""
+    """
+    Обновление access и refresh токена пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Refresh-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Сгенерированные токены доступа
+        schema:
+           id: RefreshAccessTokensResponse
+           properties:
+            access_token:
+              type: string
+              description: Access-токен
+            refresh_token:
+              type: string
+              description: Refresh-токен
+      404:
+        description: Пользователя с таким именем не существует
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                description: Пользователь не найден
+                example: User not found
+      403:
+        description: Неверный пароль
+        schema:
+           id: RefreshTokenVerificationFailed
+           properties:
+              msg:
+                type: string
+                description: Неверный refresh-токен
+                example: Invalid refresh token
+    """
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
@@ -52,6 +156,53 @@ def refresh() -> RefreshAccessTokensResponse:
 @auth_v1.route("/registration", methods=["POST"])
 @validate()
 def registration(body: UserRegistration):
+    """
+    Регистрация пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - name: body
+        in: body
+        required: true
+        description: Логин и пароль пользователя
+        schema:
+          id: UserLoginScheme
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Имя пользователя
+            password:
+              type: string
+              description: Пароль пользователя
+    responses:
+      200:
+        description: Регистрация прошла успешно
+        schema:
+           id: SuccessfulRegistration
+           properties:
+             msg:
+               type: string
+               example: Successful registration
+      400:
+        description: Ошибка валидации пароля
+        schema:
+           id: PasswordValidationFailed
+           properties:
+             msg:
+               type: string
+               example: The password must contain at least eight characters, at least one letter and one number.
+      409:
+        description: Пользователь с таким именем уже существует
+        schema:
+           id: UserAlreadyExists
+           properties:
+              msg:
+               type: string
+               example: User with this username already exists!
+    """
     user = AuthService.get_user_by_username(body.username)
     if user:
         return JsonService.return_user_exists()
@@ -59,38 +210,40 @@ def registration(body: UserRegistration):
     return JsonService.return_success_response(msg='Successful registration')
 
 
-@auth_v1.route("/password-change", methods=["POST"])
-@validate()
-@jwt_required()
-def password_change(body: PasswordChange):
-    identity = get_jwt_identity()
-    user = AuthService.get_user_by_username(identity["username"])
-    if not user:
-        return JsonService.return_user_not_found()
-    if not user.check_password(body.old_password):
-        return JsonService.return_password_verification_failed()
-    get_auth_service().change_password(user, body.new_password)
-    return JsonService.return_success_response(msg='Successful password change')
-
-
-@auth_v1.route("/user", methods=["PUT"])
-@validate()
-@jwt_required()
-def change_user_data(body: UserData):
-    identity = get_jwt_identity()
-    user = AuthService.get_user_by_username(identity["username"])
-    if not user:
-        return JsonService.return_user_not_found()
-    created = get_auth_service().change_user_data(user, body)
-    if not created:
-        return JsonService.return_user_exists()
-    return JsonService.return_success_response(msg='Successful user data changed')
-
-
 @auth_v1.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    """Разлогинивает пользователя."""
+    """
+    Разлогинить пользователя.
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Пользователь разлогинен
+        schema:
+           id: UserLoggedOut
+           properties:
+              msg:
+                type: string
+                example: User has been logged out
+      404:
+        description: Пользователя с таким именем не существует
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                description: Пользователь не найден
+                example: User not found
+    """
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
@@ -103,23 +256,184 @@ def logout():
     return JsonService.return_success_response(msg="User has been logged out")
 
 
-@jwt.token_in_blocklist_loader
-def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
-    """Проверка access-токена, что он не лежит уже в revoked-токенах."""
-    jti_access_token = jwt_payload["jti"]
-
-    user = AuthService.get_user_by_username(jwt_payload['sub']['username'])
+# todo одновремено не позволяет вводить параметры хеадера и тела
+@auth_v1.route("/password-change", methods=["POST"])
+@validate()
+@jwt_required()
+def password_change(body: PasswordChange):
+    """
+    Изменение пароля пользователя
+    ---
+    tags:
+      - Data Change
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+      - in: body
+        name: body
+        required: true
+        description: Старый и новый пароли пользователя
+        schema:
+          id: PasswordChange
+          required:
+            - name
+          properties:
+            old_password:
+              type: string
+              description: Старый пароль пользователя
+            new_password:
+              type: string
+              description: Новый пароль пользователя
+    responses:
+      200:
+        description: Смена пароля прошла успешно
+        schema:
+           id: SuccessPasswordChange
+           properties:
+             msg:
+               type: string
+               example: Successful password change
+      400:
+       description: Ошибка валидации пароля
+       schema:
+          id: PasswordValidationFailed
+          properties:
+             msg:
+               type: string
+               example: The password must contain at least eight characters, at least one letter and one number.
+      403:
+        description: Неверный пароль
+        schema:
+           id: PasswordVerificationFailed
+           properties:
+              msg:
+                type: string
+                example: Invalid password
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+    """
+    identity = get_jwt_identity()
+    user = AuthService.get_user_by_username(identity["username"])
     if not user:
         return JsonService.return_user_not_found()
+    if not user.check_password(body.old_password):
+        return JsonService.return_password_verification_failed()
+    get_auth_service().change_password(user, body.new_password)
+    return JsonService.return_success_response(msg='Successful password change')
 
-    compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, jti_access_token)
-    return not compare_access_tokens
+
+# todo сделать одновременно заголовок и тело
+@auth_v1.route("/user", methods=["PUT"])
+@validate()
+@jwt_required()
+def change_user_data(body: UserData):
+    """
+    Изменение данных пользователя
+    ---
+    tags:
+      - Data Change
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+      - in: body
+        name: body
+        required: true
+        description: Новые данные пользователя
+        schema:
+          id: UserData
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Новое имя пользователя
+    responses:
+      200:
+        description: Смена данных пользователя прошла успешно
+        schema:
+           id: SuccessUserDataChange
+           properties:
+             msg:
+               type: string
+               example: Successful user data changed
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+      409:
+        description: Пользователь с таким именем уже существует
+        schema:
+           id: UserAlreadyExists
+           properties:
+              msg:
+               type: string
+               example: User with this username already exists!
+    """
+    identity = get_jwt_identity()
+    user = AuthService.get_user_by_username(identity["username"])
+    if not user:
+        return JsonService.return_user_not_found()
+    created = get_auth_service().change_user_data(user, body)
+    if not created:
+        return JsonService.return_user_exists()
+    return JsonService.return_success_response(msg='Successful user data changed')
 
 
+# todo посмотреть как сделать лист в ответ
 @auth_v1.route("/account-history", methods=["GET"])
 @jwt_required()
 def account_history():
-    """Выводит историю входов аккаунта."""
+    """
+    Выводит историю входов аккаунта.
+    ---
+    tags:
+      - User account
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: История входа для данного аккаунта
+        schema:
+           id: AccountHistory
+           properties:
+            user_id:
+              type: str
+              description: Идентификатор пользователя
+            created:
+              type: datetime
+              description: Время входа
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+    """
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
@@ -134,6 +448,28 @@ def account_history():
 @auth_v1.route("/protected", methods=["GET"])
 @jwt_required()
 def protected():
-    """Проверяет и возвращает роль пользователя"""
+    """
+    Проверяет и возвращает роль пользователя
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Роль пользвателя
+        schema:
+           id: UserRole
+           properties:
+             properties:
+              msg:
+                type: string
+                example: [ADMIN, STANDARD, PRIVILEGED]
+    """
     identity = get_jwt_identity()
     return JsonService.return_success_response(msg=identity['role'])
