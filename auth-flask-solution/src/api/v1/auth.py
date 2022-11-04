@@ -143,6 +143,9 @@ def refresh() -> RefreshAccessTokensResponse:
     if not compare_refresh_tokens:
         return JsonService.return_invalid_refresh_token()
 
+    access_token = get_jwt()["jti"]
+    get_auth_service().set_revoked_access_token(current_user.id, access_token)
+
     access_token, refresh_token = get_auth_service().create_tokens(current_user)
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
@@ -244,7 +247,6 @@ def logout():
     return JsonService.return_success_response(msg="User has been logged out")
 
 
-# todo одновремено не позволяет вводить параметры хеадера и тела
 @auth_v1.route("/password-change", methods=["POST"])
 @validate()
 @jwt_required()
@@ -376,7 +378,6 @@ def change_user_data(body: UserData):
     return JsonService.return_success_response(msg='Successful user data changed')
 
 
-# todo посмотреть как сделать лист в ответ
 @auth_v1.route("/account-history", methods=["GET"])
 @validate()
 @jwt_required()

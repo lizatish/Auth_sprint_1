@@ -89,6 +89,10 @@ class AuthService:
         self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
         self.cache_service.delete_refresh_token(user_id)
 
+    def set_revoked_access_token(self, user_id: str, revoked_access_token: str):
+        """Помечает access-токен как отозванный."""
+        self.cache_service.set_revoked_access_token(user_id, revoked_access_token)
+
     def check_access_token_is_revoked(self, user_id: str, access_token: str) -> bool:
         """Проверяет валидный access-токен на то, что он не лежит в базе отозванных токенов."""
         revokes_access_tokens_bin = self.cache_service.get_revoked_access_token(user_id)
