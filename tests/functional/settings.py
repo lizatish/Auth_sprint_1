@@ -8,6 +8,9 @@ from pydantic import BaseSettings
 class TestSettings(BaseSettings):
     """Базовые тестовые настройки."""
 
+    PAGE: int = 1
+    PER_PAGE: int = 5
+
     AUTH_PORT: int = 4555
 
     # Настройки Flask
@@ -78,4 +81,4 @@ class TestSettingsLocal(TestSettings):
 @lru_cache()
 def get_settings() -> TestSettings:
     """Возвращает настройки тестов."""
-    return TestSettingsDocker()
+    return TestSettingsLocal()

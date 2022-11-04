@@ -1,10 +1,10 @@
 from flask import Blueprint, request
-from flask_jwt_extended import get_jwt
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt, current_user, jwt_required
 from flask_pydantic import validate
 
 from api.v1.schemas import RefreshAccessTokensResponse, UserData, PasswordChange, UserRegistration
-from api.v1.schemas import UserLoginScheme, AccountHistory
+from api.v1.schemas import UserLoginScheme, AccountHistory, Pagination
+from core.cache import cache
 from core.jwt import get_jwt_instance
 from services.auth import AuthService, get_auth_service
 from services.json import JsonService
@@ -138,18 +138,12 @@ def refresh() -> RefreshAccessTokensResponse:
                 description: Неверный refresh-токен
                 example: Invalid refresh token
     """
-    identity = get_jwt_identity()
-
-    user = AuthService.get_user_by_username(identity['username'])
-    if not user:
-        return JsonService.return_user_not_found()
-
     refresh_token = JsonService.get_authorization_header_token(request)
-    compare_refresh_tokens = get_auth_service().check_refresh_token(user.id, refresh_token)
+    compare_refresh_tokens = get_auth_service().check_refresh_token(current_user.id, refresh_token)
     if not compare_refresh_tokens:
         return JsonService.return_invalid_refresh_token()
 
-    access_token, refresh_token = get_auth_service().create_tokens(user)
+    access_token, refresh_token = get_auth_service().create_tokens(current_user)
     return JsonService.return_success_response(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -244,14 +238,8 @@ def logout():
                 description: Пользователь не найден
                 example: User not found
     """
-    identity = get_jwt_identity()
-
-    user = AuthService.get_user_by_username(identity['username'])
-    if not user:
-        return JsonService.return_user_not_found()
-
     access_token = get_jwt()["jti"]
-    get_auth_service().logout_user(user.id, access_token)
+    get_auth_service().logout_user(current_user.id, access_token)
 
     return JsonService.return_success_response(msg="User has been logged out")
 
@@ -322,17 +310,12 @@ def password_change(body: PasswordChange):
                 type: string
                 example: User not found
     """
-    identity = get_jwt_identity()
-    user = AuthService.get_user_by_username(identity["username"])
-    if not user:
-        return JsonService.return_user_not_found()
-    if not user.check_password(body.old_password):
+    if not current_user.check_password(body.old_password):
         return JsonService.return_password_verification_failed()
-    get_auth_service().change_password(user, body.new_password)
+    get_auth_service().change_password(current_user, body.new_password)
     return JsonService.return_success_response(msg='Successful password change')
 
 
-# todo сделать одновременно заголовок и тело
 @auth_v1.route("/user", methods=["PUT"])
 @validate()
 @jwt_required()
@@ -387,11 +370,7 @@ def change_user_data(body: UserData):
                type: string
                example: User with this username already exists!
     """
-    identity = get_jwt_identity()
-    user = AuthService.get_user_by_username(identity["username"])
-    if not user:
-        return JsonService.return_user_not_found()
-    created = get_auth_service().change_user_data(user, body)
+    created = get_auth_service().change_user_data(current_user, body)
     if not created:
         return JsonService.return_user_exists()
     return JsonService.return_success_response(msg='Successful user data changed')
@@ -399,8 +378,9 @@ def change_user_data(body: UserData):
 
 # todo посмотреть как сделать лист в ответ
 @auth_v1.route("/account-history", methods=["GET"])
+@validate()
 @jwt_required()
-def account_history():
+def account_history(query: Pagination):
     """
     Выводит историю входов аккаунта.
     ---
@@ -434,15 +414,12 @@ def account_history():
                 type: string
                 example: User not found
     """
-    identity = get_jwt_identity()
+    account_history_data = get_auth_service().get_account_history(
+        current_user, query.page, query.per_page
+    )
 
-    user = AuthService.get_user_by_username(identity['username'])
-    if not user:
-        return JsonService.return_user_not_found()
-
-    account_history_data = get_auth_service().get_account_history(user)
-
-    return JsonService.prepare_output(AccountHistory, account_history_data)
+    prepared_output = JsonService.prepare_output(AccountHistory, account_history_data.items)
+    return JsonService.pagination_return(account_history_data, prepared_output)
 
 
 @auth_v1.route("/protected", methods=["GET"])
@@ -471,5 +448,14 @@ def protected():
                 type: string
                 example: [ADMIN, STANDARD, PRIVILEGED]
     """
-    identity = get_jwt_identity()
-    return JsonService.return_success_response(msg=identity['role'])
+    return JsonService.return_success_response(msg=current_user.role.label.name)
+
+
+@jwt.user_lookup_loader
+@cache.memoize(timeout=60)
+def user_lookup_callback(_jwt_header, jwt_data):
+    """
+    Делает переменную current_user доступной в каждой конечной точке с помощью @jwt_required
+    """
+    identity = jwt_data['sub']
+    return AuthService.get_user_by_username(identity['username'])
