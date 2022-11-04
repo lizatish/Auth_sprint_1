@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 from flask.testing import FlaskClient
-from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import create_refresh_token, get_jwt
 from flask_sqlalchemy import SQLAlchemy
 from redis import Redis
 
@@ -11,6 +11,7 @@ from tests.functional.testdata.refresh import test_data_for_update_user_refresh_
     test_data_unsuccess_usage_old_refresh_token, test_data_unsuccess_update_user_refresh_token_not_exists, \
     test_data_unsuccess_update_user_refresh_token_another_role, \
     test_data_unsuccess_update_user_refresh_token_validation_error
+from tests.functional.utils.tokens import get_revoked_access_tokens
 
 conf = get_settings()
 pytestmark = pytest.mark.asyncio
@@ -34,6 +35,12 @@ def test_success_update_user_refresh_token(
     response = auth_api_client.post('/refresh', headers=headers)
     response_body = response.json
     refresh_token = sync_redis_pool.get(f"refresh_{user.id}").decode('ascii')
+
+    revoked_tokens = get_revoked_access_tokens(user.id, sync_redis_pool)
+    access_token_jwt = get_jwt()["jti"]
+
+    assert len(revoked_tokens) == 1
+    assert revoked_tokens[0].decode('ascii') == access_token_jwt
 
     assert response.status_code == expected_answer['status']
     assert response_body['access_token']
