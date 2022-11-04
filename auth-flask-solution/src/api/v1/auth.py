@@ -13,6 +13,19 @@ auth_v1 = Blueprint('auth_v1', __name__)
 jwt = get_jwt_instance()
 
 
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
+    """Проверка access-токена, что он не лежит уже в revoked-токенах."""
+    jti_access_token = jwt_payload["jti"]
+
+    user = AuthService.get_user_by_username(jwt_payload['sub']['username'])
+    if not user:
+        return JsonService.return_user_not_found()
+
+    compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, jti_access_token)
+    return not compare_access_tokens
+
+
 @auth_v1.route("/login", methods=["POST"])
 @validate()
 def login(body: UserLoginScheme) -> RefreshAccessTokensResponse:
@@ -209,7 +222,7 @@ def logout():
       - in: header
         name: Authorization
         required: true
-        description: Refresh-токен пользователя
+        description: Access-токен пользователя
         schema:
             type: string
     responses:
@@ -257,7 +270,7 @@ def password_change(body: PasswordChange):
       - in: header
         name: Authorization
         required: true
-        description: Refresh-токен пользователя
+        description: Access-токен пользователя
         schema:
             type: string
       - in: body
@@ -275,13 +288,6 @@ def password_change(body: PasswordChange):
             new_password:
               type: string
               description: Новый пароль пользователя
-    parameters:
-      - in: header
-        name: Authorization
-        required: true
-        description: Refresh-токен пользователя
-        schema:
-            type: string
     responses:
       200:
         description: Смена пароля прошла успешно
@@ -326,10 +332,61 @@ def password_change(body: PasswordChange):
     return JsonService.return_success_response(msg='Successful password change')
 
 
+# todo сделать одновременно заголовок и тело
 @auth_v1.route("/user", methods=["PUT"])
 @validate()
 @jwt_required()
 def change_user_data(body: UserData):
+    """
+    Изменение данных пользователя
+    ---
+    tags:
+      - Data Change
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+      - in: body
+        name: body
+        required: true
+        description: Новые данные пользователя
+        schema:
+          id: UserData
+          required:
+            - name
+          properties:
+            username:
+              type: string
+              description: Новое имя пользователя
+    responses:
+      200:
+        description: Смена данных пользователя прошла успешно
+        schema:
+           id: SuccessUserDataChange
+           properties:
+             msg:
+               type: string
+               example: Successful user data changed
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+      409:
+        description: Пользователь с таким именем уже существует
+        schema:
+           id: UserAlreadyExists
+           properties:
+              msg:
+               type: string
+               example: User with this username already exists!
+    """
     identity = get_jwt_identity()
     user = AuthService.get_user_by_username(identity["username"])
     if not user:
@@ -340,23 +397,43 @@ def change_user_data(body: UserData):
     return JsonService.return_success_response(msg='Successful user data changed')
 
 
-@jwt.token_in_blocklist_loader
-def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
-    """Проверка access-токена, что он не лежит уже в revoked-токенах."""
-    jti_access_token = jwt_payload["jti"]
-
-    user = AuthService.get_user_by_username(jwt_payload['sub']['username'])
-    if not user:
-        return JsonService.return_user_not_found()
-
-    compare_access_tokens = get_auth_service().check_access_token_is_revoked(user.id, jti_access_token)
-    return not compare_access_tokens
-
-
+# todo посмотреть как сделать лист в ответ
 @auth_v1.route("/account-history", methods=["GET"])
 @jwt_required()
 def account_history():
-    """Выводит историю входов аккаунта."""
+    """
+    Выводит историю входов аккаунта.
+    ---
+    tags:
+      - User account
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: История входа для данного аккаунта
+        schema:
+           id: AccountHistory
+           properties:
+            user_id:
+              type: str
+              description: Идентификатор пользователя
+            created:
+              type: datetime
+              description: Время входа
+      404:
+        description: Пользователь с таким именем не найден
+        schema:
+           id: UserNotFound
+           properties:
+              msg:
+                type: string
+                example: User not found
+    """
     identity = get_jwt_identity()
 
     user = AuthService.get_user_by_username(identity['username'])
@@ -371,6 +448,28 @@ def account_history():
 @auth_v1.route("/protected", methods=["GET"])
 @jwt_required()
 def protected():
-    """Проверяет и возвращает роль пользователя"""
+    """
+    Проверяет и возвращает роль пользователя
+    ---
+    tags:
+      - Authorization
+    parameters:
+      - in: header
+        name: Authorization
+        required: true
+        description: Access-токен пользователя
+        schema:
+            type: string
+    responses:
+      200:
+        description: Роль пользвателя
+        schema:
+           id: UserRole
+           properties:
+             properties:
+              msg:
+                type: string
+                example: [ADMIN, STANDARD, PRIVILEGED]
+    """
     identity = get_jwt_identity()
     return JsonService.return_success_response(msg=identity['role'])
