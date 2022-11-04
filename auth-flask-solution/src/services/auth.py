@@ -28,9 +28,9 @@ class AuthService:
         self.db_connection.session.add(history)
         self.db_connection.session.commit()
 
-    def get_account_history(self, user):
-        """Получить историю входов."""
-        return user.stories
+    def get_account_history(self, user: User, page: int, per_page: int):
+        """Получить историю входов с пагинацией."""
+        return AccountHistory.query.filter_by(user=user).paginate(page=page, per_page=per_page)
 
     def create_tokens(self, user: User):
         """Создать access и refresh токены для пользователя."""
@@ -56,6 +56,14 @@ class AuthService:
     def create_user(self, username: str, password: str):
         """Создать пользователя."""
         role = get_or_create(self.db_connection.session, Role, label=RoleType.STANDARD)
+        user = User(username=username, role=role)
+        user.set_password(password)
+        self.db_connection.session.add(user)
+        self.db_connection.session.commit()
+
+    def create_superuser(self, username: str, password: str):
+        """Создать супер-пользователя."""
+        role = get_or_create(self.db_connection.session, Role, label=RoleType.ADMIN)
         user = User(username=username, role=role)
         user.set_password(password)
         self.db_connection.session.add(user)
@@ -92,7 +100,7 @@ class AuthService:
     @staticmethod
     def get_user_by_username(username: str) -> User:
         """Получить пользователя по его username."""
-        return User.query.filter_by(username=username).first()
+        return User.query.filter_by(username=username).one_or_none()
 
     @staticmethod
     def get_user_by_id(user_id: str):

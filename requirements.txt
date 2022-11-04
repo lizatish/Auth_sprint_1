@@ -15,10 +15,12 @@ exceptiongroup==1.0.0rc9; python_version < "3.11" and python_version >= "3.7"
 flake8==5.0.4; python_full_version >= "3.6.1"
 flasgger==0.9.5
 flask-babelex==0.9.4
+flask-caching==2.0.1
 flask-jwt-extended==4.4.4; python_version >= "3.7" and python_version < "4"
 flask-login==0.6.2; python_version >= "3.7"
 flask-mail==0.9.1
 flask-marshmallow==0.14.0
+flask-migrate==3.1.0
 flask-principal==0.4.0
 flask-pydantic==0.11.0; python_version >= "3.6"
 flask-security==3.0.0

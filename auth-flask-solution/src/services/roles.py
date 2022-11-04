@@ -6,7 +6,6 @@ from models.db_models import User, db, Role
 from services.utils import get_or_create
 
 
-
 class RolesService:
     """Сервис ролей."""
 

@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 db: SQLAlchemy | None = None
 
@@ -7,11 +8,8 @@ db: SQLAlchemy | None = None
 def create_db(app: Flask):
     """Инициализирует бд для алхимии."""
     global db
-    db = SQLAlchemy()
-    db.init_app(app)
-    with app.app_context():
-        from models import db_models  # noqa
-        db.create_all()
+    db = SQLAlchemy(app)
+    Migrate(app, db)
 
 
 def get_db() -> SQLAlchemy:

@@ -27,7 +27,7 @@ async def test_get_account_history(
     response = auth_api_client.get('/account-history', headers=headers)
     response_body = response.json
 
-    assert response_body[0]['created']
-    assert response_body[0]['id']
-    assert len(response_body) == expected_answer['len']
+    assert response_body['results'][0]['created']
+    assert response_body['results'][0]['id']
+    assert len(response_body['results']) == expected_answer['len']
     assert response.status_code == expected_answer['status']

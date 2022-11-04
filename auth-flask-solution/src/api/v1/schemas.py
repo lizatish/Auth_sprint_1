@@ -3,6 +3,7 @@ import re
 from uuid import UUID
 
 from pydantic import BaseModel, validator
+from flask import current_app
 
 from models.general import RoleType
 
@@ -73,3 +74,10 @@ class AccountHistory(BaseModel):
 
     id: UUID
     created: datetime.datetime
+
+
+class Pagination(BaseModel):
+    """Схема пагинации."""
+
+    page: int = current_app.config['PAGE']
+    per_page: int = current_app.config['PER_PAGE']

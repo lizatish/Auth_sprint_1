@@ -57,6 +57,20 @@ class JsonService:
         return [orjson.loads(model(**item.__dict__).json()) for item in items]
 
     @staticmethod
+    def pagination_return(paginator, data):
+        """Возвращает данные с информацией о пагинации."""
+        return {
+            'page': paginator.page,
+            'pages': paginator.pages,
+            'total_count': paginator.total,
+            'prev_page': paginator.prev_num,
+            'next_page': paginator.next_num,
+            'has_next': paginator.has_next,
+            'has_prev': paginator.has_prev,
+            'results': data
+        }
+
+    @staticmethod
     def prepare_single_output(model, item):
         """Возвращает данные в json формате приведенные к нужной модели."""
         return orjson.loads(model(**item.__dict__).json())

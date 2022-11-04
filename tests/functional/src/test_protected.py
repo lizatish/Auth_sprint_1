@@ -29,6 +29,7 @@ def test_protected_access(
 
     response = auth_api_client.get('/protected', headers=headers)
     response_body = response.json
+    print(response_body)
 
     assert response.status_code == expected_answer['status']
     assert response_body == expected_body
